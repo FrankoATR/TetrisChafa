@@ -1,0 +1,6 @@
+﻿cl : command line warning D9035: option 'Gm' has been deprecated and will be removed in a future release
+  main.cpp
+D:\CODE\C++\AllegroFirstGame\Project1\Project1\Collisions.h(47): warning C4715: 'Collider::Collision': not all control paths return a value
+  
+Project1.rc(29): error RC2135: file not found: C:\Users\Franko-PC\Downloads\icon.ico
+  
