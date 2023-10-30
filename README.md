@@ -1,4 +1,4 @@
-# Project-MetaTetrisChafa
+# TetrisChafa
 Totally inspired by one of my favorite games, Tetris, this is my first project of this type, it is little, but I put a lot of effort into it and
 I want to share it with the game developer community.
 
@@ -19,6 +19,7 @@ PC: arrows, space and left click.
 
 
 ## General Information
+- Last Update 10/2023 (v1.1)
 - Development date: (10/2021 - 11/2021) - El Salvador.
 - This is a small project that I did in my free time while attending university.
 - 1400 lines C++ approx.
