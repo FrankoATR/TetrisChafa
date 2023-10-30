@@ -44,7 +44,7 @@
     <ClInclude Include="Resourcesimg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource2.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -52,8 +52,19 @@
     <Image Include="images\icon\icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="images\icon\icon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="images\icon\icon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TetrisChafa.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

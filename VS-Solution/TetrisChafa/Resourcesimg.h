@@ -8,7 +8,7 @@ struct Unit_Block {
 };
 
 struct Tetris_game {
-	ALLEGRO_BITMAP* background1 = al_load_bitmap("images/backgrounds/BackgroundTetris.png");
+	ALLEGRO_BITMAP* background1 = al_load_bitmap("images/backgrounds/Menu.jpg");
 	ALLEGRO_BITMAP* background2 = al_load_bitmap("images/backgrounds/background3.jpg");
 	ALLEGRO_BITMAP* iconGame = al_load_bitmap("images/icon/icon.png");
 

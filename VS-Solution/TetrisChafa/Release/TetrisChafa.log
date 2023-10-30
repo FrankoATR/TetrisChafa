@@ -1,0 +1,7 @@
+﻿  main.cpp
+  Generando código
+  Previous IPDB not found, fall back to full compilation.
+D:\Mi PC\CODE\C++\TetrisChafa\TetrisChafa\Collisions.h(47): warning C4715: 'Collider::Collision': no todas las rutas de acceso de control devuelven un valor
+  All 351 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Generación de código finalizada
+  TetrisChafa.vcxproj -> D:\Mi PC\CODE\C++\TetrisChafa\Release\TetrisChafa.exe

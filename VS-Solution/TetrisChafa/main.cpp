@@ -119,8 +119,8 @@ int menu_game(){
 	Tetris_game SysImg;
 	al_set_display_icon(ventana, SysImg.iconGame);
 
-	dirt_chunk = al_load_font("fonts/Dirtchunk.otf", 70, 0);
-	coords = al_load_font("fonts/Dirtchunk.otf", 10, 0);
+	dirt_chunk = al_load_font("fonts/Minecraft.ttf", 70, 0);
+	coords = al_load_font("fonts/Minecraft.ttf", 10, 0);
 	/*
 	ALLEGRO_BITMAP* menu_null = al_load_bitmap("images/menu_null.bmp");
 	ALLEGRO_BITMAP* menu_opciones = al_load_bitmap("images/menu_1.bmp");
@@ -146,9 +146,9 @@ int menu_game(){
 
 		al_draw_bitmap(Tetrismenu.background1, 0, 0, NULL);
 
-		al_draw_text(dirt_chunk, al_map_rgb( 255, 255, 255), 316, 50, NULL, ("TetrisChafa V1.1"));
+		al_draw_text(dirt_chunk, al_map_rgb( 255, 255, 255), 300, 50, NULL, ("TetrisChafa V1.1"));
 
-		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 316, 150, NULL, ("Maximum score: " + to_string(MaxPoints)).c_str());
+		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 340, 150, NULL, ("Max score: " + to_string(MaxPoints)).c_str());
 		//al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 200, 600, NULL, ("Made by: Francisco Rosa"));
 
 		BOTON1.Display(event_queue, Evento);
@@ -186,8 +186,8 @@ int menu_game(){
 }
 
 int game_in() {
-	dirt_chunk = al_load_font("fonts/Dirtchunk.otf", 50, 0);
-	coords = al_load_font("fonts/Dirtchunk.otf", 15, 0);
+	dirt_chunk = al_load_font("fonts/Minecraft.ttf", 50, 0);
+	coords = al_load_font("fonts/Minecraft.ttf", 15, 0);
 
 	ALLEGRO_BITMAP* background1 = al_load_bitmap("images/backgrounds/BackgroundTetris.png");
 	Tetris_game Tetrisimg;
@@ -348,8 +348,8 @@ int game_in() {
 
 
 		//al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 400, 50, NULL, ("Contador: " + to_string(segundo / 60) + ":" + to_string(segundo % 60)).c_str());
-		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 50, 30, NULL, ("Points: " + to_string(BONUSPOINTS)).c_str() );
-		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 550, 30, NULL, ("Take a block: 1000 points. "));
+		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 50, 30, NULL, ("Score: " + to_string(BONUSPOINTS)).c_str() );
+		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 550, 30, NULL, ("Move 1 block for 1000"));
 
 
 		al_flip_display();

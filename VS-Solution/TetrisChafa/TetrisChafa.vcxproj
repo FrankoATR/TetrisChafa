@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{769d92db-ec3f-4e12-a948-3332be5f2d07}</ProjectGuid>
-    <RootNamespace>Project1</RootNamespace>
+    <RootNamespace>TetrisChafa</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>TetrisChafa</ProjectName>
   </PropertyGroup>
@@ -193,17 +193,20 @@
     <ClInclude Include="Collisions.h" />
     <ClInclude Include="FigureModels.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="resource2.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Resourcesimg.h" />
     <ClInclude Include="SpecialFuncs.h" />
     <ClInclude Include="TetrisBlocks.h" />
     <ClInclude Include="TetrisFigures.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="images\icon\icon.ico" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ResourceCompile Include="TetrisChafa.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="images\icon\icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

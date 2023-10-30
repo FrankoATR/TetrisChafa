@@ -1,23 +1,66 @@
 # Project-MetaTetrisChafa
-> Created by Francisco Alonso Torres Rosa.
-
-Email: francoatr2015@gmail.com
-
-My github: https://github.com/FrankoATR
-
-Development date: (10/2021 - 11/2021) - El Salvador.
-
-This is my first project of this type, it is little, but, I put a lot of effort and 
+Totally inspired by one of my favorite games, Tetris, this is my first project of this type, it is little, but I put a lot of effort into it and
 I want to share it with the game developer community.
 
-1400 lines C++ approx.
+## Game Controls
+PC: arrows, space and left click.
 
-Graphics update - V1.1
+## Table of Contents
+* [General Info](#general-information)
+* [Technologies Used](#technologies-used)
+* [Features](#features)
+* [Preview](#preview)
+* [Setup](#setup)
+* [Usage](#usage)
+* [Project Status](#project-status)
+* [Room for Improvement](#room-for-improvement)
+* [Acknowledgements](#acknowledgements)
+* [Contact](#contact)
 
-while(true)
 
-{
+## General Information
+- Development date: (10/2021 - 11/2021) - El Salvador.
+- This is a small project that I did in my free time while attending university.
+- 1400 lines C++ approx.
 
-	cout << "Dedicated to my girlfriend Katherine <3" ;
-  
-}
+
+## Technologies Used
+- Visual Studio 2022
+- Allegro.5.2.7.1
+
+
+## Features
+- The ability to move blocks, but it is not free.
+- Graphics update
+
+
+## Preview
+![Preview](./img/preview1.png)
+
+![Preview](./img/preview2.png)
+
+
+## Setup
+To play you just have to download the Release folder found inside Bin x64 and run TetrisChafa.exe
+
+## Usage
+If you want to build it yourself, feel free to use and modify everything in VS-Solution; To do this you will need to have Visual Studio.
+
+
+## Project Status
+Project is: _complete_
+
+
+## Improvements
+- There are problems with memory management.
+
+
+## Acknowledgements
+- This project was inspired by Tetris
+- Dedicated to all the people who inspire me to develop games.
+- Dedicated to Katherine <3
+
+
+## Contact
+Created by Francisco Rosa.
+<a href="mailto:francoatr2015@gmail.com">francoatr2015@gmail.com</a> - Don't worry, I'm friendly!
