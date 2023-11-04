@@ -3,7 +3,7 @@ Totally inspired by one of my favorite games, Tetris, this is my first project o
 I want to share it with the game developer community.
 
 ## Game Controls
-PC: arrows, space and left click.
+PC: arrows, space, z, x, and left click.
 
 ## Table of Contents
 * [General Info](#general-information)
@@ -19,10 +19,10 @@ PC: arrows, space and left click.
 
 
 ## General Information
-- Last Update 10/2023 (v1.1)
+- Last Update 11/2023 (v1.2)
 - Development date: (10/2021 - 11/2021) - El Salvador.
 - This is a small project that I did in my free time while attending university.
-- 1400 lines C++ approx.
+- 1600 lines C++ approx.
 
 
 ## Technologies Used
@@ -30,10 +30,13 @@ PC: arrows, space and left click.
 - Allegro.5.2.7.1
 
 
-## Features
+## Features 
 - The ability to move blocks, but it is not free.
 - Graphics update
-
+- 10 difficulty levels that affect the speed of falling.
+- Now You can hold figures.
+- Now You can observe the final falling position of the figure.
+- Now you know what the next 2 figures are.
 
 ## Preview
 ![Preview](./img/preview1.png)

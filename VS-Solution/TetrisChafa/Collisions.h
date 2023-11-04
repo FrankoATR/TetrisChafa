@@ -19,7 +19,7 @@ class Collider
 		bool Collision( Collider*);
 		//bool checkforcolliderDOWN();
 
-		void virtual DestroyCollider();
+		void virtual DestroyCollider() const;
 
 };
 
@@ -56,7 +56,7 @@ bool Collider::SquaretoSquareCollision(Collider* obj2) {
 	else return false;
 }
 
-void Collider::DestroyCollider() {
+void Collider::DestroyCollider() const{
 	delete (this);
 
 }

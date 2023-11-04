@@ -1,5 +1,8 @@
 #include <time.h>
 
+list<TetrisFigures*> pile_figures;
+
+
 struct Matrix_Dimensions {
 	int files;
 	int columns;
@@ -16,10 +19,26 @@ float RandomFunc(int limit_A, int limit_B) {
 }
 
 void genereteFig() {
-	srand(time(NULL));
-	figures.push_back(new TetrisFigures(330, -72, rand() % 8, rand() % 5));
+	auto it = pile_figures.begin();
+
+	(*it)->funcMovTo(10 * 32, 1 * 32);
+
+
+	figures.push_back(*it);
+	pile_figures.erase(it);
+
+	int posYAux = 380 + 0 * 60;
+
+	for (auto it = pile_figures.begin(); it != pile_figures.end(); it++) {
+		(*it)->funcMovTo(670, posYAux);
+		posYAux -= 80;
+	}
+
+	pile_figures.push_back(new TetrisFigures(670, 380+ 2*80, rand() % cantFig, rand() % 5));
+
 }
 
+/*
 void Takeaobj(Player *obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento)
 {
 	int Mx = Evento.mouse.x;
@@ -59,16 +78,17 @@ void Takeaobj(Player *obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Event
 		}
 	}
 }
+*/
 
 int checkEachFile() {
-	Collider tmpcheck(231, 159, 1, 1, 0, false);
+	Collider tmpcheck(224+32/2, 128+64/2, 1, 1, 0, false);
 	int fileCanDestroy = 0;
 	int BONUS = 0;
 
 	int FILESDESTROYED = 0;
 	float EXTRABONUS = 1;
 
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < 20; i++) {
 		for (int j = 0; j < 10; j++) {
 			//tmpcheck.DisplayFigureCollision();
 
@@ -80,13 +100,13 @@ int checkEachFile() {
 
 
 
-			tmpcheck.posX += 66;
+			tmpcheck.posX += 32;
 		}
 		if (fileCanDestroy == 10) {
 
 			FILESDESTROYED++;
 
-			tmpcheck.posX = 231;
+			tmpcheck.posX = 224 + 32 / 2;
 
 
 			for (int j = 0; j < 10; j++) {
@@ -101,7 +121,7 @@ int checkEachFile() {
 						it2++;
 					}
 				}
-				tmpcheck.posX += 66;
+				tmpcheck.posX += 32;
 
 			}
 
@@ -114,8 +134,8 @@ int checkEachFile() {
 		}
 
 		fileCanDestroy = 0;
-		tmpcheck.posX = 231;
-		tmpcheck.posY += 66;
+		tmpcheck.posX = 224 + 32 / 2;
+		tmpcheck.posY += 32;
 
 	}
 
@@ -124,11 +144,34 @@ int checkEachFile() {
 		}
 
 
-	BONUS = FILESDESTROYED * 500 * EXTRABONUS ;
+	BONUS = FILESDESTROYED * 200 * EXTRABONUS ;
 
 	return BONUS;
 }
 
+
+void newCheckEachFile() {
+	int contAux = 0;
+	list<TetrisBlocks*> lineBlocks_list;
+
+	for (int i = 1; i < 10; i++) {
+		for (auto it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
+			if ((*it)->y == i*66) {
+				contAux++;
+				lineBlocks_list.push_back(*it);
+			}
+			if (contAux == 10) {
+
+			}
+		}
+		contAux = 0;
+		lineBlocks_list.clear();
+	}
+
+}
+
+
+/*
 void Takeaobj(TetrisFigures* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento)
 {
 	int Mx = Evento.mouse.x;
@@ -176,6 +219,7 @@ void Takeaobj(TetrisFigures* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVEN
 		}
 	}
 }
+*/
 
 void Takeaobj(TetrisBlocks* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, int *B)
 {
@@ -205,12 +249,12 @@ void Takeaobj(TetrisBlocks* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT
 	else {
 		if ((Evento.type == ALLEGRO_EVENT_MOUSE_AXES || Evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) && obj->taked== true) {
 
-			if (Mx>= 198 && Mx<= 857 && My >= 192 && My <= 653 ) {
+			if (Mx>= 32*7 && Mx<= 32*17-1 && My >= 32*4 && My <= 32*24-1 ) {
 				bool isColling = false;
-				obj->x = Mx - Mx % 66;
-				obj->y = My - 6 - My % 66;
-				obj->ThisCollider->posX = Mx - Mx % 66;
-				obj->ThisCollider->posY = My - 6 - My % 66;
+				obj->x = Mx - Mx % 32;
+				obj->y = My - My % 32;
+				obj->ThisCollider->posX = Mx - Mx % 32;
+				obj->ThisCollider->posY = My - My % 32;
 
 
 				for (list<TetrisFigures*>::iterator it = figures.begin(); it != figures.end(); it++) {

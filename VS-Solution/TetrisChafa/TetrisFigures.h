@@ -3,7 +3,7 @@
 
 struct STATEFig {
 	int x, y;
-}FigureState;
+}FigureState, ghostState;
 
 class TetrisFigures
 {
@@ -19,11 +19,13 @@ public:
 	bool taked;
 
 	//seleccionar Complete_Block
-	Complete_figure FIGURE;
-	int figuretype, figureid;
+	int fig_id, fig_rotation;
 
 	//Lista de Blocks
 	list<TetrisBlocks*> blocks;
+	list<TetrisBlocks*> ghostBlocks;
+
+	bool keys[ALLEGRO_KEY_MAX] = { 0 };
 
 	//funciones
 	TetrisFigures(int, int, int, int); //Constructor
@@ -36,22 +38,30 @@ public:
 
 	void CreateType();
 	void funcMov(int, int);
+	void funcMovTo(int, int);
 
 	template <class Complete_figure>
 	void funcRot(Complete_figure);
 
-	void mov(ALLEGRO_EVENT_QUEUE*, ALLEGRO_EVENT, ALLEGRO_TIMER*);
-	void rotate();
+	void mov(ALLEGRO_EVENT_QUEUE*, ALLEGRO_EVENT, int, int);
+	void rotate(bool);
+
+	void toDeep();
+	void toDeepGhost();
+
+
+private:
+	void forAllBlocksInFigure();
 
 };
 
 list<TetrisFigures*> figures;
 
-TetrisFigures::TetrisFigures(int x_, int y_, int figuretype, int figureid) {
+TetrisFigures::TetrisFigures(int x_, int y_, int id, int rotation) {
 	x = x_;
 	y = y_;
-	this->figuretype = figuretype;
-	this->figureid = figureid;
+	this->fig_id = id;
+	this->fig_rotation = rotation % (figureModels[fig_id].cantitie);
 	controlling = true;
 	taked = false;
 	StaticTime = 0;
@@ -61,22 +71,31 @@ TetrisFigures::TetrisFigures(int x_, int y_, int figuretype, int figureid) {
 
 void TetrisFigures::Display() {
 	if (blocks.empty() == false) {
-		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
-				(*it)->Display();
-				it++;
+		for (auto it = ghostBlocks.begin(); it != ghostBlocks.end(); it++) {
+			(*it)->Display();
 		}
+		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
+
+			(*it)->Display();
+			it++;
+		}
+
+
 	}
 	else {
-		cout << "Vacio" << figuretype << " " << figureid << endl;
+		cout << "Vacio" << fig_id << " " << fig_rotation << endl;
 	}
 }
 
 template <class Complete_figure>
 void TetrisFigures::CreateFigure(Complete_figure form) {
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (form[i][j] == 1)
-				blocks.push_back(new TetrisBlocks(x + (j * 66), y + (i * 66), figureid));
+	int auxColor = rand() % 4;
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
+			if (form[i][j] == 1) {
+				blocks.push_back(new TetrisBlocks(x + (j * 32), y + (i * 32), auxColor));
+				ghostBlocks.push_back(new TetrisBlocks(x + (j * 32), y + (i * 32), 5));
+			}
 		}
 	}
 
@@ -85,112 +104,144 @@ void TetrisFigures::CreateFigure(Complete_figure form) {
 
 void TetrisFigures::CreateType() {
 	if (blocks.empty()) {
-		if (figuretype == 0) {
-			if (figureid == 0) CreateFigure(FIGURE.figArrow.Right);
-			if (figureid == 1) CreateFigure(FIGURE.figArrow.Down);
-			if (figureid == 2) CreateFigure(FIGURE.figArrow.Left);
-			if (figureid == 3) CreateFigure(FIGURE.figArrow.Up);
-		}
-		if (figuretype == 1) {
-			if (figureid == 0) CreateFigure(FIGURE.figLLeft.Right);
-			if (figureid == 1) CreateFigure(FIGURE.figLLeft.Down);
-			if (figureid == 2) CreateFigure(FIGURE.figLLeft.Left);
-			if (figureid == 3) CreateFigure(FIGURE.figLLeft.Up);
-		}
-		if (figuretype == 2) {
-			if (figureid == 0) CreateFigure(FIGURE.figLRight.Right);
-			if (figureid == 1) CreateFigure(FIGURE.figLRight.Down);
-			if (figureid == 2) CreateFigure(FIGURE.figLRight.Left);
-			if (figureid == 3) CreateFigure(FIGURE.figLRight.Up);
-		}
-		if (figuretype == 3) {
-			figureid = figureid % 2;
-			if (figureid == 0) CreateFigure(FIGURE.figLine.Vertical);
-			if (figureid == 1) CreateFigure(FIGURE.figLine.Horizontal);
-		}
-		if (figuretype == 4) {
-			figureid = figureid % 2;
-			if (figureid == 0) CreateFigure(FIGURE.figCube.Cube_H);
-			if (figureid == 1) CreateFigure(FIGURE.figCube.Cube_V);
-		}
-		if (figuretype == 5) {
-			figureid = figureid % 2;
-			if (figureid == 0) CreateFigure(FIGURE.figScaleft.Up);
-			if (figureid == 1) CreateFigure(FIGURE.figScaleft.Down);
-		}
-		if (figuretype == 6) {
-			figureid = figureid % 2;
-			if (figureid == 0) CreateFigure(FIGURE.figScalrigth.Up);
-			if (figureid == 1) CreateFigure(FIGURE.figScalrigth.Down);
-		}
-
-		if (figuretype == 7) {
-			if (figureid == 0) CreateFigure(FIGURE.figCross.Right);
-			if (figureid == 1) CreateFigure(FIGURE.figCross.Down);
-			if (figureid == 2) CreateFigure(FIGURE.figCross.Left);
-			if (figureid == 3) CreateFigure(FIGURE.figCross.Up);
-		}
-
+		CreateFigure(figureModels[fig_id].model[fig_rotation]);
+		ghostState.y = this->y;
 
 	}
 	else {
-		cout << " Ya Creada" << figuretype << " " << figureid << endl;
+		cout << " Ya Creada" << fig_id << " " << fig_rotation << endl;
 	}
 
 }
 
 
 void TetrisFigures::funcMov(int x, int y) {
+
+	auto ghost_ = ghostBlocks.begin();
+
 	for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end(); it++) {
 		TetrisBlocks* A = *it;
 		A->y -= y;
 		A->x -= x;
 		A->ThisCollider->posX -= x;
 		A->ThisCollider->posY -= y;
+
+		(*ghost_)->x -= x;
+		(*ghost_)->y = A->y;
+		(*ghost_)->ThisCollider->posX -= x;
+		(*ghost_)->ThisCollider->posY = A->y;
+
+		ghost_++;
 	}
 	this->y -= y;
 	this->x -= x;
+
+
+
 }
 
 
-void TetrisFigures::mov(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, ALLEGRO_TIMER* segundoTimer) {
+void TetrisFigures::funcMovTo(int x, int y) {
+	auto block_ = blocks.begin();
+	auto ghost_ = ghostBlocks.begin();
+
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
+			if (figureModels[fig_id].model[fig_rotation][i][j] == 1) {
+				(*block_)->y = y + i * 32;
+				(*block_)->x = x + j * 32;
+				(*block_)->ThisCollider->posX = x + j * 32;
+				(*block_)->ThisCollider->posY = y + i * 32;
+
+				(*ghost_)->x = x + j * 32;
+				(*ghost_)->y = (*block_)->y;
+				(*ghost_)->ThisCollider->posX = x + j * 32;
+				(*ghost_)->ThisCollider->posY = (*block_)->y;
+
+				ghost_++;
+				block_++;
+			}
+		}
+	}
+
+
+	this->y = y;
+	this->x = x;
+
+
+
+}
+
+
+
+void TetrisFigures::mov(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, int Timer, int velocityLevel) {
 	if (!taked && controlling) {
 		FigureState.x = this->x;
 		FigureState.y = this->y;
+
+		ghostState.y = this->y;
+
+
 		if (Evento.type == ALLEGRO_EVENT_KEY_DOWN) {
-
-			switch (Evento.keyboard.keycode) {
+			keys[Evento.keyboard.keycode] = true;
 			/*
-			case ALLEGRO_KEY_UP:
-				funcMov(0, 66);
-				break;
+			switch (Evento.keyboard.keycode) {
+				case ALLEGRO_KEY_UP:
+					funcMov(0, 66);
+					break;
+
+				case ALLEGRO_KEY_DOWN:
+					funcMov(0, -32);
+					break;
+				case ALLEGRO_KEY_LEFT:
+					funcMov(32, 0);
+					break;
+				case ALLEGRO_KEY_RIGHT:
+					funcMov(-32, 0);
+					break;
+				case ALLEGRO_KEY_X:
+					rotate(true);
+					break;
+				case ALLEGRO_KEY_Z:
+					rotate(false);
+					break;
+				case ALLEGRO_KEY_SPACE:
+					toDeep();
+					break;
+
+				default:
+					break;
+			}
 			*/
-			case ALLEGRO_KEY_DOWN:
-				funcMov(0, -66);
-				break;
-			case ALLEGRO_KEY_LEFT:
-				funcMov(66, 0);
-				break;
-			case ALLEGRO_KEY_RIGHT:
-				funcMov(-66, 0);
-				break;
-			case ALLEGRO_KEY_SPACE:
-				rotate();
-				break;
 
-			default:
-				break;
-
-			}
+			if (Evento.keyboard.keycode == ALLEGRO_KEY_LEFT)
+				funcMov(32, 0);
+			else if (Evento.keyboard.keycode == ALLEGRO_KEY_RIGHT)
+				funcMov(-32, 0);
+			if (Evento.keyboard.keycode == ALLEGRO_KEY_X)
+				rotate(true);
+			else if (Evento.keyboard.keycode == ALLEGRO_KEY_Z)
+				rotate(false);
+			if (Evento.keyboard.keycode == ALLEGRO_KEY_SPACE)
+				toDeep();
 
 		}
+		if (Evento.type == ALLEGRO_EVENT_KEY_UP)
+			keys[Evento.keyboard.keycode] = false;
+
+
+
+		if (Evento.keyboard.keycode == ALLEGRO_KEY_DOWN)
+			funcMov(0, -32);
+
+
+
 		if (Evento.type == ALLEGRO_EVENT_TIMER) {
-			if (Evento.timer.source == segundoTimer) {
-				cout << " Valor de x,y:" << this->x << "," << this->y << endl;
-				funcMov(0, -66);
+			if (Timer % (59 - (velocityLevel-1) * 6)   == 0) {
+				//cout << " Valor de x,y:" << this->x << "," << this->y << endl;
+				funcMov(0, -32);
 			}
 		}
-
 
 		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
 			if ((*it)->IsDeletable()) {
@@ -210,7 +261,7 @@ void TetrisFigures::mov(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, 
 						cout << "CAMBIO STATE" << endl;
 						funcMov(x - FigureState.x, y - FigureState.y);
 
-						if ((*it2)->posY == 654) {
+						if ((*it2)->posY == 24 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
 
 							StaticTime++;
 							cout << "Static: " << StaticTime << endl;
@@ -250,11 +301,13 @@ void TetrisFigures::mov(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, 
 				}
 
 
-				(*it)->ChangeColor(event_queue, Evento, segundoTimer);
+				//(*it)->ChangeColor(event_queue, Evento, segundoTimer);
 				it++;
 			}
 
 		}
+
+		toDeepGhost();
 
 	}
 	else {
@@ -269,84 +322,74 @@ void TetrisFigures::mov(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, 
 
 		}
 
-		
+
 
 	}
+
+
+
 }
 
 
 template <class Complete_figure>
 void TetrisFigures::funcRot(Complete_figure form) {
 	list<TetrisBlocks*>::iterator it = blocks.begin();
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
 			if (form[i][j] == 1) {
 				if ((it) != blocks.end()) {
 					TetrisBlocks* F = *it;
-					(F)->x = x + (j * 66);
-					(F)->y = y + (i * 66);
-					(F)->ThisCollider->posX = x + (j * 66);
-					(F)->ThisCollider->posY = y + (i * 66);
+					(F)->x = x + (j * 32);
+					(F)->y = y + (i * 32);
+					(F)->ThisCollider->posX = x + (j * 32);
+					(F)->ThisCollider->posY = y + (i * 32);
 					it++;
 				}
 			}
 		}
 	}
+	
+	auto it2 = ghostBlocks.begin();
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
+			if (form[i][j] == 1) {
+				if ((it2) != ghostBlocks.end()) {
+					TetrisBlocks* F = *it2;
+					(F)->x = x + (j * 32);
+					(F)->y = ghostState.y + (i * 32);
+					(F)->ThisCollider->posX = x + (j * 32);
+					(F)->ThisCollider->posY = ghostState.y + (i * 32);
+					it2++;
+				}
+			}
+		}
+	}
+	
 }
 
-void TetrisFigures::rotate() {
+void TetrisFigures::rotate(bool clockwise) {
 	FigureState.x = this->x;
 	FigureState.y = this->y;
 	if (blocks.empty() == false) {
-		if (figuretype == 0) {
-			if (figureid == 0) funcRot(FIGURE.figArrow.Down);
-			if (figureid == 1) funcRot(FIGURE.figArrow.Left);
-			if (figureid == 2) funcRot(FIGURE.figArrow.Up);
-			if (figureid == 3) funcRot(FIGURE.figArrow.Right);
-			figureid = (++figureid) % FIGURE.figArrow.id;
+
+		if (clockwise) {
+			++fig_rotation;
+			fig_rotation %= figureModels[fig_id].cantitie;
 		}
-		if (figuretype == 1) {
-			if (figureid == 0) funcRot(FIGURE.figLLeft.Down);
-			if (figureid == 1) funcRot(FIGURE.figLLeft.Left);
-			if (figureid == 2) funcRot(FIGURE.figLLeft.Up);
-			if (figureid == 3) funcRot(FIGURE.figLLeft.Right);
-			figureid = (++figureid) % FIGURE.figLLeft.id;
-		}
-		if (figuretype == 2) {
-			if (figureid == 0) funcRot(FIGURE.figLRight.Down);
-			if (figureid == 1) funcRot(FIGURE.figLRight.Left);
-			if (figureid == 2) funcRot(FIGURE.figLRight.Up);
-			if (figureid == 3) funcRot(FIGURE.figLRight.Right);
-			figureid = (++figureid) % FIGURE.figLRight.id;
-		}
-		if (figuretype == 3) {
-			if (figureid == 0) funcRot(FIGURE.figLine.Horizontal);
-			if (figureid == 1) funcRot(FIGURE.figLine.Vertical);
-			figureid = (++figureid) % FIGURE.figLine.id;
-		}
-		if (figuretype == 4) {
-			if (figureid == 0) funcRot(FIGURE.figCube.Cube_H);
-			if (figureid == 1) funcRot(FIGURE.figCube.Cube_V);
-			figureid = (++figureid) % FIGURE.figCube.id;
+
+		else {
+			--fig_rotation;
+			if (fig_rotation < 0)
+				fig_rotation = figureModels[fig_id].cantitie - 1;
+			else
+				fig_rotation %= figureModels[fig_id].cantitie;
 
 		}
-		if (figuretype == 5) {
-			if (figureid == 0) funcRot(FIGURE.figScaleft.Down);
-			if (figureid == 1) funcRot(FIGURE.figScaleft.Up);
-			figureid = (++figureid) % FIGURE.figScaleft.id;
-		}
-		if (figuretype == 6) {
-			if (figureid == 0) funcRot(FIGURE.figScalrigth.Down);
-			if (figureid == 1) funcRot(FIGURE.figScalrigth.Up);
-			figureid = (++figureid) % FIGURE.figScalrigth.id;
-		}
-		if (figuretype == 7) {
-			if (figureid == 0) funcRot(FIGURE.figCross.Down);
-			if (figureid == 1) funcRot(FIGURE.figCross.Left);
-			if (figureid == 2) funcRot(FIGURE.figCross.Up);
-			if (figureid == 3) funcRot(FIGURE.figCross.Right);
-			figureid = (++figureid) % FIGURE.figCross.id;
-		}
+
+		//cout << fig_rotation << endl;
+
+		funcRot(figureModels[fig_id].model[fig_rotation]);
+
 	}
 	bool auxstate = false;
 
@@ -363,7 +406,7 @@ void TetrisFigures::rotate() {
 		}
 
 		for (list<TetrisBlocks*>::iterator it3 = Unique_blocks.begin(); it3 != Unique_blocks.end(); it3++) {
-		
+
 			if ((*it)->ThisCollider->Collision((*it3)->ThisCollider)) {
 
 				auxstate = true;
@@ -374,7 +417,7 @@ void TetrisFigures::rotate() {
 
 	}
 	if (auxstate == true) {
-		rotate();
+		rotate(clockwise);
 	}
 
 }
@@ -388,5 +431,179 @@ bool TetrisFigures::Empty() {
 }
 
 void TetrisFigures::DestroyTetrisFigures() {
-	//delete this;
+	for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
+		(*it)->DestroyTetrisBlocks();
+		it = blocks.erase(it);
+	}
+	for (auto it = ghostBlocks.begin(); it != ghostBlocks.end();) {
+		(*it)->DestroyTetrisBlocks();
+		it = blocks.erase(it);
+	}
+
+	delete (this);
+}
+
+void TetrisFigures::forAllBlocksInFigure() {
+	for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
+		if ((*it)->IsDeletable()) {
+			cout << "mueltoF" << endl;
+			//CollisionBlocks.remove((*it)->ThisCollider);
+			(*it)->DestroyTetrisBlocks();
+			//delete (*it);
+			it = blocks.erase(it);
+		}
+		else {
+
+
+			for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
+
+
+				if ((*it)->ThisCollider->Collision((*it2))) {
+					cout << "CAMBIO STATE" << endl;
+					funcMov(x - FigureState.x, y - FigureState.y);
+
+					if ((*it2)->posY == 24 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+
+						StaticTime++;
+						cout << "Static: " << StaticTime << endl;
+
+						if (StaticTime >= 2) {
+							controlling = false;
+							cout << "QUIETOOOO" << endl;
+							//DestroyTetrisFigures();
+
+						}
+
+					}
+				}
+			}
+			for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
+
+
+				if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
+
+					cout << "CAMBIO STATE" << endl;
+					funcMov(x - FigureState.x, y - FigureState.y);
+
+					if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY) {
+
+						StaticTime++;
+						cout << "Static: " << StaticTime << endl;
+
+						if (StaticTime >= 2) {
+							controlling = false;
+							cout << "QUIETOOOO" << endl;
+							//DestroyTetrisFigures();
+
+						}
+					}
+
+				}
+			}
+
+
+
+		}
+
+	}
+
+}
+
+void TetrisFigures::toDeep() {
+	bool Indeep = false;
+	while (!Indeep) {
+		FigureState.x = this->x;
+		FigureState.y = this->y;
+		funcMov(0, -32);
+		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
+			for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
+				if ((*it)->ThisCollider->Collision((*it2))) {
+					funcMov(x - FigureState.x, y - FigureState.y);
+					if ((*it2)->posY == 24 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+						Indeep = true;
+						controlling = false;
+					}
+				}
+			}
+			for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
+				if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
+					funcMov(x - FigureState.x, y - FigureState.y);
+					if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY) {
+						Indeep = true;
+						controlling = false;
+
+					}
+
+				}
+			}
+
+
+			it++;
+
+
+		}
+
+	}
+}
+
+
+
+
+void TetrisFigures::toDeepGhost() {
+
+
+
+
+	bool Indeep = false;
+
+	while (!Indeep) {
+
+
+		for (auto it = ghostBlocks.begin(); it != ghostBlocks.end(); it++) {
+			(*it)->mov();
+		}
+
+		for (auto it = ghostBlocks.begin(); it != ghostBlocks.end();) {
+
+			for (auto it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
+				if ((*it)->ThisCollider->Collision((*it2))) {
+
+					for (auto it3 = ghostBlocks.begin(); it3 != ghostBlocks.end(); it3++) {
+						(*it3)->y -= 32;
+						(*it3)->ThisCollider->posY -= 32;
+
+					}
+
+					if ((*it2)->posY == 24 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+						Indeep = true;
+					}
+
+				}
+
+			}
+
+			for (auto it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
+				if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
+
+					for (auto it3 = ghostBlocks.begin(); it3 != ghostBlocks.end(); it3++) {
+						(*it3)->y -= 32;
+						(*it3)->ThisCollider->posY -= 32;
+					}
+
+					if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY) {
+						Indeep = true;
+					}
+
+				}
+
+			}
+
+			it++;
+
+		}
+
+	}
+
+
+
 }

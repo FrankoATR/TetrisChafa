@@ -16,12 +16,13 @@ public:
 	bool taked;
 
 	//seleccionar Complete_Block
-	int figureid;
+	int spriteId;
 
 	ALLEGRO_BITMAP* sprite1;
 	ALLEGRO_BITMAP* sprite2;
 	ALLEGRO_BITMAP* sprite3;
 	ALLEGRO_BITMAP* sprite4;
+	ALLEGRO_BITMAP* sprite5;
 
 	Unit_Block BLOCK;
 
@@ -39,16 +40,17 @@ public:
 
 list<TetrisBlocks*> Unique_blocks;
 
-TetrisBlocks::TetrisBlocks(int x, int y, int figureid) {
+TetrisBlocks::TetrisBlocks(int x, int y, int spriteId) {
 	this->x = x;
 	this->y = y;
-	this->figureid = figureid;
-	sprite_h = 65;
-	sprite_w = 65;
+	this->spriteId = spriteId;
+	sprite_h = 31;
+	sprite_w = 31;
 	this->sprite1 = BLOCK.green;
 	this->sprite2 = BLOCK.blue;
 	this->sprite3 = BLOCK.red;
 	this->sprite4 = BLOCK.black;
+	this->sprite5 = BLOCK.ghost;
 
 	taked = false;
 
@@ -62,30 +64,32 @@ TetrisBlocks::TetrisBlocks(int x, int y, int figureid) {
 }
 
 void TetrisBlocks::Display() {
-	if (figureid == 0) al_draw_bitmap(sprite1,x,y,NULL);
-	if (figureid == 1) al_draw_bitmap(sprite2, x, y, NULL);
-	if (figureid == 2) al_draw_bitmap(sprite3, x, y, NULL);
-	if (figureid == 3) al_draw_bitmap(sprite4, x, y, NULL);
+	if (spriteId == 0) al_draw_bitmap(sprite1, x, y, NULL);
+	if (spriteId == 1) al_draw_bitmap(sprite2, x, y, NULL);
+	if (spriteId == 2) al_draw_bitmap(sprite3, x, y, NULL);
+	if (spriteId == 3) al_draw_bitmap(sprite4, x, y, NULL);
+	if (spriteId == 5) al_draw_bitmap(sprite5, x, y, NULL);
+
 }
 
 void TetrisBlocks::mov() {
 
 	BlockState.y = y;
 
-	y += 66;
-	ThisCollider->posY += 66;
+	y += 32;
+	ThisCollider->posY += 32;
 
 }
 
 bool TetrisBlocks::IsDeletable() {
-	if (y > 720 - sprite_h) return true;
+	if (y > 25*32 - sprite_h) return true;
 	else return false;
 }
 
 void TetrisBlocks::ChangeColor(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, ALLEGRO_TIMER* segundoTimer) {
 	if (Evento.type == ALLEGRO_EVENT_TIMER) {
 		if (Evento.timer.source == segundoTimer) {
-			figureid = ((++figureid) % 4);
+			spriteId = ((++spriteId) % 4);
 		}
 	}
 }
@@ -97,6 +101,7 @@ void TetrisBlocks::DestroyTetrisBlocks() {
 		al_destroy_bitmap(sprite2);
 		al_destroy_bitmap(sprite3);
 		al_destroy_bitmap(sprite4);
+		al_destroy_bitmap(sprite5);
 		ThisCollider->DestroyCollider();
 	}
 	delete this;
