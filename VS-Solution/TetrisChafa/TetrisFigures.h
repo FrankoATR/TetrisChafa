@@ -261,7 +261,7 @@ void TetrisFigures::mov(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, 
 						cout << "CAMBIO STATE" << endl;
 						funcMov(x - FigureState.x, y - FigureState.y);
 
-						if ((*it2)->posY == 24 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+						if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
 
 							StaticTime++;
 							cout << "Static: " << StaticTime << endl;
@@ -462,7 +462,7 @@ void TetrisFigures::forAllBlocksInFigure() {
 					cout << "CAMBIO STATE" << endl;
 					funcMov(x - FigureState.x, y - FigureState.y);
 
-					if ((*it2)->posY == 24 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+					if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
 
 						StaticTime++;
 						cout << "Static: " << StaticTime << endl;
@@ -519,7 +519,7 @@ void TetrisFigures::toDeep() {
 			for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
 				if ((*it)->ThisCollider->Collision((*it2))) {
 					funcMov(x - FigureState.x, y - FigureState.y);
-					if ((*it2)->posY == 24 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+					if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
 						Indeep = true;
 						controlling = false;
 					}
@@ -574,7 +574,7 @@ void TetrisFigures::toDeepGhost() {
 
 					}
 
-					if ((*it2)->posY == 24 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+					if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
 						Indeep = true;
 					}
 

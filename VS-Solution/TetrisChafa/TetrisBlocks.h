@@ -82,7 +82,7 @@ void TetrisBlocks::mov() {
 }
 
 bool TetrisBlocks::IsDeletable() {
-	if (y > 25*32 - sprite_h) return true;
+	if (y > 27*32 - sprite_h) return true;
 	else return false;
 }
 

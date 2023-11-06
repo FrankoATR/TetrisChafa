@@ -15,6 +15,8 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_image.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 
 #include <string>
 #include <Windows.h>
@@ -48,6 +50,7 @@ template <class T> void DoALL(T dataList, void (*callback)(const void*)) {
 
 //Inicializadores
 //DECLARACION DE TYPES PRINCIPALES
+
 ALLEGRO_FONT* dirt_chunk;
 ALLEGRO_FONT* coords;
 
@@ -58,13 +61,17 @@ ALLEGRO_EVENT Evento;
 ALLEGRO_TIMER* FPS;
 ALLEGRO_TRANSFORM tr;
 
+ALLEGRO_SAMPLE* menu_song;
+ALLEGRO_SAMPLE* game_song;
+ALLEGRO_SAMPLE_INSTANCE* menu_song_Instance;
+ALLEGRO_SAMPLE_INSTANCE* game_song_Instance;
 
 int auxMinCount = 1;
 int velocityLevel = 1;
 
 //DISPLAY DE VENTANA
-int ancho = 1280;
-int alto = 896;
+int ancho = 32 * 36;
+int alto = 32 * 29;
 int ancho_W = GetSystemMetrics(SM_CXSCREEN);
 int alto_W = GetSystemMetrics(SM_CYSCREEN);
 
@@ -99,6 +106,8 @@ int main() {
 	}
 
 	//INIT DE METODOS
+	al_install_audio();
+	al_init_acodec_addon();
 	al_init_font_addon();
 	al_init_ttf_addon();
 	al_init_primitives_addon();
@@ -106,9 +115,17 @@ int main() {
 	al_install_keyboard();
 	al_init_image_addon();
 
+	al_reserve_samples(2);
+
+	menu_song = al_load_sample("music/neon-gaming.mp3");
+	game_song = al_load_sample("music/kim-lightyear-legends.mp3");
+	menu_song_Instance = al_create_sample_instance(menu_song);
+	game_song_Instance = al_create_sample_instance(game_song);
+
+
 	ventana = al_create_display(ancho, alto);
 	al_set_window_title(ventana, "TetrisChafa");
-	al_set_window_position(ventana, ancho_W / 2 - ancho / 2, alto_W / 2 - alto / 2);
+	al_set_window_position(ventana, ancho_W / 2 - ancho / 2, (alto_W / 2 - alto / 2) - 32);
 
 
 	//TYPES PRINCIPALES
@@ -133,13 +150,27 @@ int main() {
 
 	al_destroy_display(ventana);
 	al_destroy_font(dirt_chunk);
+	al_destroy_sample(menu_song);
+	al_destroy_sample(game_song);
+	al_destroy_sample_instance(menu_song_Instance);
+	al_destroy_sample_instance(game_song_Instance);
 
 	return 0;
 }
 
 int menu_game(){
 	Tetris_game SysImg;
+
 	al_set_display_icon(ventana, SysImg.iconGame);
+
+	al_set_sample_instance_playmode(menu_song_Instance, ALLEGRO_PLAYMODE_LOOP);
+	al_set_sample_instance_playmode(game_song_Instance, ALLEGRO_PLAYMODE_LOOP);
+
+	al_attach_sample_instance_to_mixer(menu_song_Instance, al_get_default_mixer());
+	al_attach_sample_instance_to_mixer(game_song_Instance, al_get_default_mixer());
+
+	al_play_sample_instance(menu_song_Instance);
+
 
 	dirt_chunk = al_load_font("fonts/Minecraft.ttf", 70, 0);
 	coords = al_load_font("fonts/Minecraft.ttf", 10, 0);
@@ -155,9 +186,9 @@ int menu_game(){
 
 	int MaxPoints = 0;
 
-	Buttons BOTON1(550, 500, 200, 100, al_load_bitmap("images/buttons/button_salir_false.png"), al_load_bitmap("images/buttons/button_salir_true.png"));
-	Buttons BOTON2(250, 300, 200, 100, al_load_bitmap("images/buttons/button_false.png"), al_load_bitmap("images/buttons/button_true.png"));
-	Buttons BOTON3(550, 350, 200, 100, al_load_bitmap("images/buttons/button_jugar_false.png"), al_load_bitmap("images/buttons/button_jugar_true.png"));
+	Buttons BOTON1(450, 500, 200, 100, al_load_bitmap("images/buttons/button_salir_false.png"), al_load_bitmap("images/buttons/button_salir_true.png"));
+	Buttons BOTON2(150, 300, 200, 100, al_load_bitmap("images/buttons/button_false.png"), al_load_bitmap("images/buttons/button_true.png"));
+	Buttons BOTON3(450, 350, 200, 100, al_load_bitmap("images/buttons/button_jugar_false.png"), al_load_bitmap("images/buttons/button_jugar_true.png"));
 
 	while (true) {
 
@@ -167,9 +198,9 @@ int menu_game(){
 
 		al_draw_bitmap(Tetrismenu.menu_sprite, 0, 0, NULL);
 
-		al_draw_text(dirt_chunk, al_map_rgb( 255, 255, 255), 400, 100, NULL, ("TetrisChafa V1.2"));
+		al_draw_text(dirt_chunk, al_map_rgb( 255, 255, 255), 300, 100, NULL, ("TetrisChafa V1.21"));
 
-		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 440, 200, NULL, ("Max score: " + to_string(MaxPoints)).c_str());
+		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 340, 200, NULL, ("Max score: " + to_string(MaxPoints)).c_str());
 		//al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 200, 600, NULL, ("Made by: Francisco Rosa"));
 
 		BOTON1.Display(event_queue, Evento);
@@ -181,7 +212,14 @@ int menu_game(){
 		//if (BOTON2->Pressed()) al_set_display_icon(ventana, Tetrismenu.background1);
 
 		if (BOTON3.Pressed()) {
+			
+			al_stop_sample_instance(menu_song_Instance);
+			al_play_sample_instance(game_song_Instance);
+			
 			int tmpPoints = game_in();
+
+			al_stop_sample_instance(game_song_Instance);
+			al_play_sample_instance(menu_song_Instance);
 
 			if (MaxPoints < tmpPoints) MaxPoints = tmpPoints;
 
@@ -223,12 +261,12 @@ int game_in() {
 	//Buttons* BOTON5 = new Buttons(800, 250, 200, 100, al_load_bitmap("images/buttons/button_false.png"), al_load_bitmap("images/buttons/button_true.png"));
 	//Buttons* BOTON6 = new Buttons(800, 400, 200, 100, al_load_bitmap("images/buttons/button_false.png"), al_load_bitmap("images/buttons/button_true.png"));
 
-	for (int i = 0; i < 24; i++) {
-		CollisionBlocks.push_back(new Collider(32*6, 32*i, 31, 31, 0, true));
-		CollisionBlocks.push_back(new Collider(32*17, 32*i, 31, 31, 0, true));
+	for (int i = 0; i < 26; i++) {
+		CollisionBlocks.push_back(new Collider(32*2, 32*i, 31, 31, 0, true));
+		CollisionBlocks.push_back(new Collider(32*13, 32*i, 31, 31, 0, true));
 	}
-	for (int i = 0; i < 34; i++) {
-		CollisionBlocks.push_back(new Collider(32 * i, 32*24, 31, 31, 0, true));
+	for (int i = 2; i < 14; i++) {
+		CollisionBlocks.push_back(new Collider(32 * i, 32*26, 31, 31, 0, true));
 	}
 
 	int BONUSPOINTS = 0;
@@ -245,7 +283,7 @@ int game_in() {
 
 
 	for (int i = 2; i > 0; i--)
-		pile_figures.push_front(new TetrisFigures(670, 360+i*80, rand() % cantFig, rand() % 5));
+		pile_figures.push_front(new TetrisFigures(32 * 18, 32 * 12 + i * 32 * 3, rand() % cantFig, rand() % 5));
 
 
 	while (true) {
@@ -291,23 +329,27 @@ int game_in() {
 
 		if (Evento.type == ALLEGRO_EVENT_KEY_DOWN) {
 			if (Evento.keyboard.keycode == ALLEGRO_KEY_UP and !alreadyHold) {
-				if (!holdFigure) {
-					auto actual = figures.begin();
-					figures.erase(actual);
-					holdFigure = (*actual);
-				}
-				else {
-					auto aux = holdFigure;
-					auto actual = figures.begin();
-					figures.erase(actual);
+				auto actual = figures.begin();
+				if (!figures.empty() and (*actual)->blocks.size() != 0 ) {
+					if (!holdFigure) {
+						cout << (*actual)->blocks.size() << endl;
 
-					holdFigure = (*actual);
+						figures.erase(actual);
+						holdFigure = (*actual);
+					}
+					else {
+						auto aux = holdFigure;
+						figures.erase(actual);
 
-					aux->funcMovTo(10 * 32, 1 * 32);
-					figures.push_back(aux);
+						holdFigure = (*actual);
+
+						aux->funcMovTo(6 * 32, 1 * 32);
+						figures.push_back(aux);
+					}
+					holdFigure->funcMovTo(32 * 29, 32 * 13);
+					alreadyHold = true;
 				}
-				holdFigure->funcMovTo(850, 700);
-				alreadyHold = true;
+
 			}
 
 		}
@@ -327,7 +369,7 @@ int game_in() {
 		if (!Unique_blocks.empty()) {
 			for (list<TetrisBlocks*>::iterator it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
 				(*it)->Display();
-				//(*it)->ChangeColor(event_queue, Evento, segundoTimer);
+
 				Takeaobj(*it, event_queue, Evento, &BONUSPOINTS);
 			
 			}	
@@ -338,10 +380,12 @@ int game_in() {
 		if (!figures.empty()) {
 			for (list<TetrisFigures*>::iterator it = figures.begin(); it != figures.end();) {
 				if (!(*it)->Empty()) {
-					(*it)->Display();
+
 					(*it)->mov(event_queue, Evento, countFPS, velocityLevel);
-				
-					//Takeaobj((*it), event_queue, Evento);
+
+
+					(*it)->Display();
+
 
 					it++;
 
@@ -359,10 +403,10 @@ int game_in() {
 		}
 
 		for (auto it = pile_figures.begin(); it != pile_figures.end(); it++) {
-				(*it)->Display();
+			(*it)->Display();
 		}
 
-		if(holdFigure)
+		if (holdFigure)
 			holdFigure->Display();
 
 		//al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 550, 650, NULL, ("Made by: Francisco Rosa"));
@@ -402,10 +446,11 @@ int game_in() {
 		// ******************** ********************* ********************
 		*/
 
+		/*
 		for (list<Collider*>::iterator it = CollisionBlocks.begin(); it != CollisionBlocks.end(); it++) {
-			//(*it)->DisplayFigureCollision();
+			(*it)->DisplayFigureCollision();
 		}
-
+		*/
 		//Takeaobj(PLAYER1, event_queue, Evento);
 
 		BONUSPOINTS += checkEachFile();
@@ -478,25 +523,28 @@ int game_in() {
 
 
 		//al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 400, 50, NULL, ("Contador: " + to_string(segundo / 60) + ":" + to_string(segundo % 60)).c_str());
-		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 650, 30, NULL, ("Move 1 block for 1000"));
-		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 650, 30+70*1, NULL, ( "Score: " + to_string(BONUSPOINTS) ).c_str() );
-		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 650, 30 + 70 * 2, NULL, ("Level: " + to_string(velocityLevel)).c_str());
+		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 32 * 16, 32  * 2, NULL, ("Move 1 block for 1000"));
+		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 32 * 16, 32  * 4, NULL, ( "Score: " + to_string(BONUSPOINTS) ).c_str() );
+		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 32 * 16, 32  * 6, NULL, ("Level: " + to_string(velocityLevel)).c_str());
 		if(velocityLevel <= 9)
-			al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 650, 30 + 70 * 3, NULL, ("Next level in: " + to_string(60 - auxMinCount)).c_str());
+			al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 32 * 16, 32  * 8, NULL, ("Next level in: " + to_string(60 - auxMinCount)).c_str());
 		else
-			al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 650, 30 + 70 * 3, NULL, "Final level");
+			al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 32 * 16, 32  * 8, NULL, "Final level");
 
-		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 650, 30 + 70 * 4, NULL, ("Next figure: "));
-		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 650, 30 + 70 * 10, NULL, ("Hold: "));
+		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 32 * 16, 32  * 10, NULL, ("Next figures "));
+		al_draw_line(32 * 27, 32 * 10, 32 * 27, 32 * 27, al_map_rgb(255, 255, 255), 1.0f);
+		al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), 32 * 29, 32  * 10, NULL, ("Hold "));
+
+		/*
 
 		int block_pixels = 32;
 		for (int i = 0; i <= ancho / block_pixels; i++) {
-			//al_draw_line(i * block_pixels, 0, i* block_pixels, alto, al_map_rgb(255, 255, 255), 1.0f);
+			al_draw_line(i * block_pixels, 0, i* block_pixels, alto, al_map_rgb(255, 255, 255), 1.0f);
 
 		}
 
 		for (int j = 0; j <= alto / block_pixels; j++) {
-			//al_draw_line( 0, j * block_pixels, ancho, j * block_pixels, al_map_rgb(255, 255, 255), 1.0f);
+			al_draw_line( 0, j * block_pixels, ancho, j * block_pixels, al_map_rgb(255, 255, 255), 1.0f);
 		}
 
 
@@ -507,18 +555,17 @@ int game_in() {
 				al_scale_transform(&tr, 0.2, 0.2);
 				al_use_transform(&tr);
 
-/*
 				al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), i * block_pixels * 5, (j * block_pixels * 5) + 20, NULL,
 					(to_string(i * block_pixels) ).c_str()
 				);
 				al_draw_text(dirt_chunk, al_map_rgb(255, 255, 255), i * block_pixels * 5, (j * block_pixels * 5) + 70, NULL,
 					( to_string(j * block_pixels) ).c_str()
 				);
-				*/
 
 
 			}
 		}
+				*/
 
 		al_flip_display();
 	}

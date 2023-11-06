@@ -11,7 +11,7 @@ struct Unit_Block {
 } blockColor;
 
 struct Tetris_game {
-	ALLEGRO_BITMAP* menu_sprite = al_load_bitmap("images/backgrounds/menu.jpg");
+	ALLEGRO_BITMAP* menu_sprite = al_load_bitmap("images/backgrounds/menu.png");
 	ALLEGRO_BITMAP* bg_sprite = al_load_bitmap("images/backgrounds/bg.png");
 	ALLEGRO_BITMAP* iconGame = al_load_bitmap("images/icon/icon.png");
 

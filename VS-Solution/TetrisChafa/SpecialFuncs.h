@@ -19,22 +19,23 @@ float RandomFunc(int limit_A, int limit_B) {
 }
 
 void genereteFig() {
+
 	auto it = pile_figures.begin();
 
-	(*it)->funcMovTo(10 * 32, 1 * 32);
+	(*it)->funcMovTo(6 * 32, 1 * 32);
 
 
 	figures.push_back(*it);
 	pile_figures.erase(it);
 
-	int posYAux = 380 + 0 * 60;
+	int posYAux = 32 * 14;	
 
 	for (auto it = pile_figures.begin(); it != pile_figures.end(); it++) {
-		(*it)->funcMovTo(670, posYAux);
-		posYAux -= 80;
+		(*it)->funcMovTo(32 * 18, posYAux);
+		posYAux -= 32 * 5;
 	}
 
-	pile_figures.push_back(new TetrisFigures(670, 380+ 2*80, rand() % cantFig, rand() % 5));
+	pile_figures.push_back(new TetrisFigures(32 * 18, 32 * 12 + 32 * 8, rand() % cantFig, rand() % 5));
 
 }
 
@@ -81,7 +82,7 @@ void Takeaobj(Player *obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Event
 */
 
 int checkEachFile() {
-	Collider tmpcheck(224+32/2, 128+64/2, 1, 1, 0, false);
+	Collider tmpcheck(96+32/2, 192+64/2, 1, 1, 0, false);
 	int fileCanDestroy = 0;
 	int BONUS = 0;
 
@@ -106,7 +107,7 @@ int checkEachFile() {
 
 			FILESDESTROYED++;
 
-			tmpcheck.posX = 224 + 32 / 2;
+			tmpcheck.posX = 96 + 32 / 2;
 
 
 			for (int j = 0; j < 10; j++) {
@@ -134,7 +135,7 @@ int checkEachFile() {
 		}
 
 		fileCanDestroy = 0;
-		tmpcheck.posX = 224 + 32 / 2;
+		tmpcheck.posX = 96 + 32 / 2;
 		tmpcheck.posY += 32;
 
 	}
@@ -249,7 +250,7 @@ void Takeaobj(TetrisBlocks* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT
 	else {
 		if ((Evento.type == ALLEGRO_EVENT_MOUSE_AXES || Evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) && obj->taked== true) {
 
-			if (Mx>= 32*7 && Mx<= 32*17-1 && My >= 32*4 && My <= 32*24-1 ) {
+			if (Mx>= 32*3 && Mx<= 32*13-1 && My >= 32*6 && My <= 32*26-1 ) {
 				bool isColling = false;
 				obj->x = Mx - Mx % 32;
 				obj->y = My - My % 32;
@@ -278,7 +279,7 @@ void Takeaobj(TetrisBlocks* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT
 
 bool checkGameOver() {
 	for (list<TetrisBlocks*>::iterator it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
-		if ((*it)->ThisCollider->posY <= 125) {
+		if ((*it)->ThisCollider->posY < 32 * 6) {
 			return true;
 		}
 

@@ -1,1 +1,4 @@
-﻿  TetrisChafa.vcxproj -> D:\Mi PC\CODE\C++\TetrisChafa\x64\Debug\TetrisChafa.exe
+﻿  main.cpp
+D:\Mi PC\CODE\C++\TetrisChafa\TetrisChafa\Collisions.h(47): warning C4715: 'Collider::Collision': no todas las rutas de acceso de control devuelven un valor
+main.obj : error LNK2019: símbolo externo __imp_al_load_sample sin resolver al que se hace referencia en la función "public: __cdecl Tetris_game::Tetris_game(void)" (??0Tetris_game@@QEAA@XZ)
+D:\Mi PC\CODE\C++\TetrisChafa\x64\Debug\TetrisChafa.exe : fatal error LNK1120: 1 externos sin resolver

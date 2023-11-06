@@ -19,7 +19,7 @@ PC: arrows, space, z, x, and left click.
 
 
 ## General Information
-- Last Update 11/2023 (v1.2)
+- Last Update 11/2023 (v1.21)
 - Development date: (10/2021 - 11/2021) - El Salvador.
 - This is a small project that I did in my free time while attending university.
 - 1600 lines C++ approx.
@@ -37,6 +37,7 @@ PC: arrows, space, z, x, and left click.
 - Now You can hold figures.
 - Now You can observe the final falling position of the figure.
 - Now you know what the next 2 figures are.
+- Fixed "up arrow + space" error.
 
 ## Preview
 ![Preview](./img/preview1.png)
