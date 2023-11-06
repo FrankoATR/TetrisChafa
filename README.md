@@ -37,6 +37,7 @@ PC: arrows, space, z, x, and left click.
 - Now You can hold figures.
 - Now You can observe the final falling position of the figure.
 - Now you know what the next 2 figures are.
+- Added soundtrack in the menu and during the game.
 - Fixed "up arrow + space" error.
 
 ## Preview
