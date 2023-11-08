@@ -19,14 +19,14 @@ PC: arrows, space, z, x, and left click.
 
 
 ## General Information
-- Last Update 11/2023 (v1.21)
+- Last Update 11/2023 (v1.22)
 - Development date: (10/2021 - 11/2021) - El Salvador.
 - This is a small project that I did in my free time while attending university.
-- 1600 lines C++ approx.
 
 
 ## Technologies Used
 - Visual Studio 2022
+- C++
 - Allegro.5.2.7.1
 
 
@@ -39,6 +39,8 @@ PC: arrows, space, z, x, and left click.
 - Now you know what the next 2 figures are.
 - Added soundtrack in the menu and during the game.
 - Fixed "up arrow + space" error.
+- Fixed problems with memory management.
+- Now the code is cleaner.
 
 ## Preview
 ![Preview](./img/preview1.png)
@@ -47,7 +49,7 @@ PC: arrows, space, z, x, and left click.
 
 
 ## Setup
-To play you just have to download the Release folder found inside Bin x64 and run TetrisChafa.exe
+To play you just have to download the Release folder or TetrisChafa.zip found inside Bin x64 and run TetrisChafa.exe
 
 ## Usage
 If you want to build it yourself, feel free to use and modify everything in VS-Solution; To do this you will need to have Visual Studio.
@@ -58,7 +60,7 @@ Project is: _complete_
 
 
 ## Improvements
-- There are problems with memory management.
+- No problems found.
 
 
 ## Acknowledgements
