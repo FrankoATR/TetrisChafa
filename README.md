@@ -49,7 +49,7 @@ PC: arrows, space, z, x, and left click.
 
 
 ## Setup
-To play you just have to download the Release folder or TetrisChafa.zip found inside Bin x64 and run TetrisChafa.exe
+To play you just have to download the setup and continue installing the game, you can also download fix setup if your files get damaged or you want to uninstall the game.
 
 ## Usage
 If you want to build it yourself, feel free to use and modify everything in VS-Solution; To do this you will need to have Visual Studio.
