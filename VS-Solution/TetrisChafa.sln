@@ -5,6 +5,8 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TetrisChafa", "TetrisChafa\TetrisChafa.vcxproj", "{769D92DB-EC3F-4E12-A948-3332BE5F2D07}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{530E7BD9-0883-4945-B216-749841D7FC69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,10 @@ Global
 		{769D92DB-EC3F-4E12-A948-3332BE5F2D07}.Release|x64.Build.0 = Release|x64
 		{769D92DB-EC3F-4E12-A948-3332BE5F2D07}.Release|x86.ActiveCfg = Release|Win32
 		{769D92DB-EC3F-4E12-A948-3332BE5F2D07}.Release|x86.Build.0 = Release|Win32
+		{530E7BD9-0883-4945-B216-749841D7FC69}.Debug|x64.ActiveCfg = Debug
+		{530E7BD9-0883-4945-B216-749841D7FC69}.Debug|x86.ActiveCfg = Debug
+		{530E7BD9-0883-4945-B216-749841D7FC69}.Release|x64.ActiveCfg = Release
+		{530E7BD9-0883-4945-B216-749841D7FC69}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

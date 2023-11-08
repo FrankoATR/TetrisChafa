@@ -3,7 +3,14 @@ Totally inspired by one of my favorite games, Tetris, this is my first project o
 I want to share it with the game developer community.
 
 ## Game Controls
-PC: arrows, space, z, x, and left click.
+Arrows:
+    Right and left: lateral movements.
+    Below: fast fall.
+    Above: Hold current piece.
+Z: counterclockwise rotation.
+X: clockwise rotation.
+Space: instant fall.
+Left click: take a block and relocate it in exchange for 1000 points.
 
 ## Table of Contents
 * [General Info](#general-information)
