@@ -44,13 +44,10 @@ TetrisBlocks::TetrisBlocks(int x, int y, ALLEGRO_BITMAP* sprite) {
 void TetrisBlocks::Display() {
 	if(sprite)
 		al_draw_bitmap(sprite, x, y, NULL);
-
 }
 
 void TetrisBlocks::mov() {
-
 	BlockState.y = y;
-
 	y += 32;
 	ThisCollider->posY += 32;
 

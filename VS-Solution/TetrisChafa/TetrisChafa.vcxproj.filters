@@ -18,9 +18,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TetrisGhostBlock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Buttons.h">
@@ -52,7 +49,7 @@
     <Image Include="images\icon\icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="images\icon\icon.ico">
+    <Image Include="assets\img\icon\icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -43,7 +43,7 @@ template <class T> void DoALL(T dataList, void (*callback)(const void*)) {
 
 #pragma region GlobalVars
 //ALLEGRO VARS
-ALLEGRO_FONT* font_minecraft;
+ALLEGRO_FONT* globalFont;
 ALLEGRO_TIMER* FPS;
 ALLEGRO_TIMER* secsTimer;
 ALLEGRO_TIMER* fallingTimer;
@@ -66,6 +66,21 @@ ALLEGRO_BITMAP* block_black;
 ALLEGRO_BITMAP* block_white1;
 ALLEGRO_BITMAP* block_white2;
 ALLEGRO_BITMAP* block_ghost;
+ALLEGRO_BITMAP* button_play_t;
+ALLEGRO_BITMAP* button_play_f;
+ALLEGRO_BITMAP* button_exit_t;
+ALLEGRO_BITMAP* button_exit_f;
+ALLEGRO_BITMAP* button_controls_t;
+ALLEGRO_BITMAP* button_controls_f;
+ALLEGRO_BITMAP* key_up;
+ALLEGRO_BITMAP* key_down;
+ALLEGRO_BITMAP* key_left;
+ALLEGRO_BITMAP* key_right;
+ALLEGRO_BITMAP* key_space;
+ALLEGRO_BITMAP* key_z;
+ALLEGRO_BITMAP* key_x;
+ALLEGRO_BITMAP* key_leftClick;
+ALLEGRO_BITMAP* key_esc;
 
 //WINDOW VARS
 int ancho = 32 * 36;
@@ -89,6 +104,7 @@ TetrisFigures* holdFigure = NULL;
 //Main Methods
 int menu_game();
 int game_in();
+void menu_controls_in();
 void timerfunc();
 void initialize();
 void endProgram();
@@ -121,10 +137,14 @@ int menu_game(){
 
 	al_play_sample_instance(menu_song_Instance);
 
-	int MaxPoints = 0;
+	al_set_timer_speed(fallingTimer, 0.2);
 
-	Buttons exitButton(450, 500, 200, 100, al_load_bitmap("images/buttons/button_salir_false.png"), al_load_bitmap("images/buttons/button_salir_true.png"));
-	Buttons playButton(450, 350, 200, 100, al_load_bitmap("images/buttons/button_jugar_false.png"), al_load_bitmap("images/buttons/button_jugar_true.png"));
+	int MaxPoints = 0;
+	bool inControls = false;
+
+	Buttons playButton(450, 350, 200, 100, button_play_f, button_play_t);
+	Buttons controlsButton(410, 500, 280, 100, button_controls_f, button_controls_t);
+	Buttons exitButton(450, 650, 200, 100, button_exit_f, button_exit_t);
 
 	while (true) {
 
@@ -133,21 +153,90 @@ int menu_game(){
 		al_wait_for_event(event_queue, &Evento);
 
 		al_draw_bitmap(menu_sprite, 0, 0, NULL);
+		
+		//Animation Menu
+
+		for (auto it = figures.begin(); it != figures.end(); it++)
+			(*it)->Display();
+
+		if (Evento.type == ALLEGRO_EVENT_TIMER) {
+			if (Evento.timer.source == secsTimer) {
+				int xPosAux = (rand() % 34) * 32;
+				int colorAux = rand() % 4;
+				ALLEGRO_BITMAP* spriteAux;
+
+				switch (colorAux) {
+				case 0:
+					spriteAux = block_green;
+					break;
+				case 1:
+					spriteAux = block_black;
+					break;
+				case 2:
+					spriteAux = block_blue;
+					break;
+				case 3:
+					spriteAux = block_red;
+					break;
+				default:
+					spriteAux = block_green;
+					break;
+				}
+
+				figures.push_back(new TetrisFigures(xPosAux, 32 * -5, rand() % cantFig, rand() % 5, spriteAux, block_ghost));
+
+
+
+			}
+			if (Evento.timer.source == fallingTimer) {
+
+
+				for (auto it = figures.begin(); it != figures.end();) {
+					if ((*it)->y <= 32 * 35) {
+						(*it)->funcMov(0, -32);
+						it++;
+					}
+					else {
+						(*it)->DestroyTetrisFigures();
+						it = figures.erase(it);
+					}
+				}
+
+			}
+		}
+
+
+
+		al_identity_transform(&tr);
+		al_scale_transform(&tr, 1.7, 1.7);
+		al_use_transform(&tr);
+
+		drawText(32 * 1, 32 * 1, "TetrisChafa v1.23");
+
+		al_identity_transform(&tr);
+		al_scale_transform(&tr, 1.5, 1.5);
+		al_use_transform(&tr);
+
+		drawText(32 * 3, 32 * 4, "Max score: " + to_string(MaxPoints));
 
 		al_identity_transform(&tr);
 		al_scale_transform(&tr, 1, 1);
 		al_use_transform(&tr);
 
-		drawText(300, 100, "TetrisChafa v1.22");
-		drawText(340, 200, "Max score: " + to_string(MaxPoints));
-
-		exitButton.Display(event_queue, Evento);
 		playButton.Display(event_queue, Evento);
+		controlsButton.Display(event_queue, Evento);
+		exitButton.Display(event_queue, Evento);
 
 
 		if (exitButton.Pressed()) return 0;
 
 		if (playButton.Pressed()) {
+
+			for (auto it = figures.begin(); it != figures.end();) {
+				(*it)->DestroyTetrisFigures();
+				it = figures.erase(it);
+			}
+
 			al_stop_sample_instance(menu_song_Instance);
 			al_play_sample_instance(game_song_Instance);
 			
@@ -156,7 +245,14 @@ int menu_game(){
 			al_stop_sample_instance(game_song_Instance);
 			al_play_sample_instance(menu_song_Instance);
 
+			al_set_timer_speed(fallingTimer, 0.2);
+
 			if (MaxPoints < tmpPoints) MaxPoints = tmpPoints;
+		}
+
+		if (controlsButton.Pressed()) {
+			menu_controls_in();
+
 		}
 
 		if (Evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -172,6 +268,68 @@ int menu_game(){
 	}
 }
 
+void menu_controls_in() {
+
+	while (true) {
+
+		al_wait_for_event(event_queue, &Evento);
+
+		al_clear_to_color(al_map_rgb(255, 255, 255));
+
+		al_draw_bitmap(menu_sprite, 0, 0, 0);
+
+		if (Evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+			break;
+
+		if (Evento.type == ALLEGRO_EVENT_KEY_DOWN)
+			if (Evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+				ButtonPressed = true;
+				break;
+			}
+
+		al_identity_transform(&tr);
+		al_scale_transform(&tr, 2, 2);
+		al_use_transform(&tr);
+		drawText(32 * 4, 32 * 0 + 16, "Controls");
+
+		al_identity_transform(&tr);
+		al_scale_transform(&tr, 1, 1);
+		al_use_transform(&tr);
+
+		al_draw_bitmap(key_right, 32 * 2, 32 * 5, NULL);
+		drawText(32 * 5, 32 * 5, "Move piece to rigth");
+
+		al_draw_bitmap(key_left, 32 * 2, 32 * 7, NULL);
+		drawText(32 * 5, 32 * 7, "Move piece to left");
+
+		al_draw_bitmap(key_down, 32 * 2, 32 * 9, NULL);
+		drawText(32 * 5, 32 * 9, "Fast fall");
+
+		al_draw_bitmap(key_up, 32 * 2, 32 * 11, NULL);
+		drawText(32 * 5, 32 * 11, "Hold current piece");
+
+		al_draw_bitmap(key_z, 32 * 2, 32 * 13, NULL);
+		drawText(32 * 5, 32 * 13, "Counterclockwise rotation");
+
+		al_draw_bitmap(key_x, 32 * 2, 32 * 15, NULL);
+		drawText(32 * 5, 32 * 15, "Clockwise rotation");
+
+		al_draw_bitmap(key_space, 32 * 2, 32 * 17, NULL);
+		drawText(32 * 9, 32 * 17, "Instant fall");
+
+		al_draw_bitmap(key_leftClick, 32 * 2, 32 * 19, NULL);
+		drawText(32 * 5, 32 * 19, "Take a block");
+
+
+		al_draw_bitmap(key_esc, 32 * 2, 32 * 23, NULL);
+		drawText(32 * 5, 32 * 23, "Exit");
+
+
+		al_flip_display();
+
+	}
+}
+
 int game_in() {
 
 	int BONUSPOINTS = 0;
@@ -181,6 +339,9 @@ int game_in() {
 
 	velocityLevel = 1;
 	auxMinCount = 1;
+
+	al_set_timer_speed(fallingTimer, 1.0);
+
 
 	//Initialize Objects in game
 	for (int i = 0; i < 26; i++) {
@@ -252,7 +413,7 @@ int game_in() {
 		}
 
 		if (Evento.type == ALLEGRO_EVENT_KEY_DOWN) {
-			if (Evento.keyboard.keycode == ALLEGRO_KEY_UP and !alreadyHold  and !blockTaked) {
+			if (Evento.keyboard.keycode == ALLEGRO_KEY_UP and !alreadyHold ) {
 				auto actual = figures.begin();
 				if (!figures.empty() and (*actual)->blocks.size() != 0 ) {
 					if (!holdFigure) {
@@ -300,7 +461,6 @@ int game_in() {
 					it++;
 				}
 				else {
-					cout << "muelto del todo" << endl;
 					(*it)->DestroyTetrisFigures();
 					it = figures.erase(it);
 				}
@@ -319,11 +479,9 @@ int game_in() {
 		if (holdFigure)
 			holdFigure->Display();
 
-		if (!blockTaked) {
-			if (checkGameOver()) {
-				cleanAllInGame();
-				return BONUSPOINTS;
-			}
+		if (checkGameOver()) {
+			cleanAllInGame();
+			return BONUSPOINTS;
 		}
 
 		if (Evento.type == ALLEGRO_EVENT_KEY_DOWN)
@@ -464,7 +622,7 @@ void displayAllColliders() {
 }
 
 void drawText(int x, int y, string text) {
-	al_draw_text(font_minecraft, colorblanco, x, y, NULL, text.c_str() );
+	al_draw_text(globalFont, colorblanco, x, y, NULL, text.c_str() );
 }
 
 
@@ -525,14 +683,14 @@ void initialize() {
 
 	al_reserve_samples(2);
 
-	menu_song = al_load_sample("music/neon-gaming.mp3");
-	game_song = al_load_sample("music/kim-lightyear-legends.mp3");
+	menu_song = al_load_sample("assets/music/neon-gaming.mp3");
+	game_song = al_load_sample("assets/music/kim-lightyear-legends.mp3");
 	menu_song_Instance = al_create_sample_instance(menu_song);
 	game_song_Instance = al_create_sample_instance(game_song);
 
 	window = al_create_display(ancho, alto);
 	al_set_window_title(window, "TetrisChafa");
-	al_set_window_position(window, ancho_W / 2 - ancho / 2, (alto_W / 2 - alto / 2) - 32);
+	al_set_window_position(window, ancho_W / 2 - ancho / 2, (alto_W / 2 - alto / 2));
 
 	secsTimer = al_create_timer(1.0);
 	fallingTimer = al_create_timer(1.0);
@@ -559,20 +717,37 @@ void initialize() {
 	al_attach_sample_instance_to_mixer(game_song_Instance, al_get_default_mixer());
 
 	//FONTS 
-	font_minecraft = al_load_font("fonts/Minecraft.ttf", 70, 0);
+	globalFont = al_load_font("assets/fonts/MinecraftTen-VGORe.ttf", 70, 0);
 
 	//BITMAPS
-	menu_sprite = al_load_bitmap("images/backgrounds/menu.png");
-	bg_sprite = al_load_bitmap("images/backgrounds/bg.png");
-	iconGame = al_load_bitmap("images/icon/icon.png");
+	menu_sprite = al_load_bitmap("assets/img/backgrounds/menu.png");
+	bg_sprite = al_load_bitmap("assets/img/backgrounds/bg.png");
+	iconGame = al_load_bitmap("assets/img/icon/icon.png");
 
-	block_green = al_load_bitmap("images/blocks/green.png");
-	block_blue = al_load_bitmap("images/blocks/blue.png");
-	block_red = al_load_bitmap("images/blocks/red.png");
-	block_black = al_load_bitmap("images/blocks/black.png");
-	block_white1 = al_load_bitmap("images/blocks/white1.png");
-	block_white2 = al_load_bitmap("images/blocks/white2.png");
-	block_ghost = al_load_bitmap("images/blocks/ghost.png");
+	block_green = al_load_bitmap("assets/img/blocks/green.png");
+	block_blue = al_load_bitmap("assets/img/blocks/blue.png");
+	block_red = al_load_bitmap("assets/img/blocks/red.png");
+	block_black = al_load_bitmap("assets/img/blocks/black.png");
+	block_white1 = al_load_bitmap("assets/img/blocks/white1.png");
+	block_white2 = al_load_bitmap("assets/img/blocks/white2.png");
+	block_ghost = al_load_bitmap("assets/img/blocks/ghost.png");
+
+	button_exit_t = al_load_bitmap("assets/img/buttons/exit_t.png");
+	button_exit_f = al_load_bitmap("assets/img/buttons/exit_f.png");
+	button_play_t = al_load_bitmap("assets/img/buttons/play_t.png");
+	button_play_f = al_load_bitmap("assets/img/buttons/play_f.png");
+	button_controls_t = al_load_bitmap("assets/img/buttons/controls_t.png");
+	button_controls_f = al_load_bitmap("assets/img/buttons/controls_f.png");
+
+	key_up = al_load_bitmap("assets/img/controls/up.png");
+	key_down = al_load_bitmap("assets/img/controls/down.png");
+	key_left = al_load_bitmap("assets/img/controls/left.png");
+	key_right = al_load_bitmap("assets/img/controls/right.png");
+	key_space = al_load_bitmap("assets/img/controls/space.png");
+	key_z = al_load_bitmap("assets/img/controls/z.png");
+	key_x = al_load_bitmap("assets/img/controls/x.png");
+	key_leftClick = al_load_bitmap("assets/img/controls/click_left.png");
+	key_esc = al_load_bitmap("assets/img/controls/esc.png");
 
 	al_set_display_icon(window, iconGame);
 }
@@ -580,10 +755,11 @@ void initialize() {
 void endProgram() {
 
 
-	al_destroy_font(font_minecraft);
+	al_destroy_font(globalFont);
 
 	al_destroy_timer(secsTimer);
 	al_destroy_timer(FPS);
+	al_destroy_timer(fallingTimer);
 
 	al_destroy_event_queue(event_queue);
 
@@ -595,6 +771,31 @@ void endProgram() {
 	al_destroy_bitmap(bg_sprite);
 	al_destroy_bitmap(menu_sprite);
 	al_destroy_bitmap(iconGame);
+
+	al_destroy_bitmap(block_green);
+	al_destroy_bitmap(block_blue);
+	al_destroy_bitmap(block_red);
+	al_destroy_bitmap(block_black);
+	al_destroy_bitmap(block_white1);
+	al_destroy_bitmap(block_white2);
+	al_destroy_bitmap(block_ghost);
+
+	al_destroy_bitmap(button_exit_t);
+	al_destroy_bitmap(button_exit_f);
+	al_destroy_bitmap(button_play_t);
+	al_destroy_bitmap(button_play_f);
+	al_destroy_bitmap(button_controls_t);
+	al_destroy_bitmap(button_controls_f);
+
+	al_destroy_bitmap(key_up);
+	al_destroy_bitmap(key_down);
+	al_destroy_bitmap(key_left);
+	al_destroy_bitmap(key_right);
+	al_destroy_bitmap(key_space);
+	al_destroy_bitmap(key_z);
+	al_destroy_bitmap(key_x);
+	al_destroy_bitmap(key_leftClick);
+	al_destroy_bitmap(key_esc);
 
 
 	al_destroy_display(window);

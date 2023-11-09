@@ -5,8 +5,8 @@ I want to share it with the game developer community.
 ## Game Controls
 * Arrows:
     * Right and left: lateral movements.
-    * Below: fast fall.
-    * Above: Hold current piece.
+    * Down: fast fall.
+    * Up: hold current piece.
 * Z: counterclockwise rotation.
 * X: clockwise rotation.
 * Space: instant fall.
@@ -26,7 +26,7 @@ I want to share it with the game developer community.
 
 
 ## General Information
-- Last Update 11/2023 (v1.22)
+- Last Update 11/2023 (v1.23)
 - Development date: (10/2021 - 11/2021) - El Salvador.
 - This is a small project that I did in my free time while attending university.
 
@@ -38,16 +38,11 @@ I want to share it with the game developer community.
 
 
 ## Features 
-- The ability to move blocks, but it is not free.
-- Graphics update
-- 10 difficulty levels that affect the speed of falling.
-- Now You can hold figures.
-- Now You can observe the final falling position of the figure.
-- Now you know what the next 3 figures are.
-- Added soundtrack in the menu and during the game.
-- Fixed "up arrow + space" error.
-- Fixed problems with memory management.
-- Now the code is cleaner.
+- Menu has been added to know the controls.
+- The font was changed.
+- The icon was changed.
+- The Background menu was changed.
+- Fixed error that occurred when taking a block.
 
 ## Preview
 ![Preview](./img/preview1.png)

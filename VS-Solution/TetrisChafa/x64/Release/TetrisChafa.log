@@ -1,7 +1,7 @@
 ﻿  main.cpp
   Generando código
-  0 of 356 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  Previous IPDB and IOBJ mismatch, fall back to full compilation.
+D:\Mi PC\CODE\C++\TetrisChafa\TetrisChafa\Collisions.h(39): warning C4715: 'Collider::Collision': no todas las rutas de acceso de control devuelven un valor
+  All 348 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Generación de código finalizada
   TetrisChafa.vcxproj -> D:\Mi PC\CODE\C++\TetrisChafa\x64\Release\TetrisChafa.exe

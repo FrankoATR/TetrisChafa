@@ -43,7 +43,6 @@ int checkEachFile() {
 
 				for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end();) {
 					if (tmpcheck.Collision((*it2)->ThisCollider)) {
-						cout << "BLOCK DESTROYED" << endl;
 						(*it2)->DestroyTetrisBlocks();
 						it2 = Unique_blocks.erase(it2);
 					}

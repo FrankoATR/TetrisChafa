@@ -187,7 +187,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="TetrisGhostBlock.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Buttons.h" />
@@ -205,7 +204,7 @@
     <ResourceCompile Include="TetrisChafa.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="images\icon\icon.ico" />
+    <Image Include="assets\img\icon\icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -29,8 +29,6 @@ Buttons::Buttons(int x, int y, int sprite_w, int sprite_h, ALLEGRO_BITMAP* sprit
 }
 
 Buttons::~Buttons() {
-	al_destroy_bitmap(sprite_0);
-	al_destroy_bitmap(sprite_1);
 }
 
 void Buttons::Display(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento) {
