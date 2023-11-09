@@ -161,7 +161,7 @@ int menu_game(){
 
 		if (Evento.type == ALLEGRO_EVENT_TIMER) {
 			if (Evento.timer.source == secsTimer) {
-				int xPosAux = (rand() % 34) * 32;
+				int xPosAux = (rand() % 32) * 32;
 				int colorAux = rand() % 4;
 				ALLEGRO_BITMAP* spriteAux;
 
