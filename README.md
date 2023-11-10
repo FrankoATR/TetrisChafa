@@ -2,6 +2,9 @@
 Totally inspired by one of my favorite games, Tetris, this is my first project of this type, it is little, but I put a lot of effort into it and
 I want to share it with the game developer community.
 
+## Download
+* [Direct download TetrisChafa](https://github.com/FrankoATR/TetrisChafa/blob/main/setup.msi?raw=true)
+
 ## Game Controls
 * Arrows:
     * Right and left: lateral movements.
