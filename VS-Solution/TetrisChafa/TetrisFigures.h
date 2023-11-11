@@ -14,6 +14,7 @@ public:
 	int y;
 
 	float StaticTime;
+	bool auxStatic = false;
 
 	bool controlling;
 	bool taked;
@@ -43,7 +44,7 @@ public:
 	template <class Complete_figure>
 	void funcRot(Complete_figure);
 
-	void update(ALLEGRO_EVENT_QUEUE*, ALLEGRO_EVENT, ALLEGRO_TIMER* segundoTimer);
+	void update(ALLEGRO_EVENT_QUEUE*, ALLEGRO_EVENT, ALLEGRO_TIMER*, ALLEGRO_TIMER*);
 	void rotate(bool);
 
 	void toDeep();
@@ -122,6 +123,7 @@ void TetrisFigures::funcMov(int x, int y) {
 	}
 	this->y -= y;
 	this->x -= x;
+
 }
 
 
@@ -153,11 +155,28 @@ void TetrisFigures::funcMovTo(int x, int y) {
 
 
 
-void TetrisFigures::update(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, ALLEGRO_TIMER* Timer) {
+void TetrisFigures::update(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, ALLEGRO_TIMER* TimerVelocity, ALLEGRO_TIMER* TimerSecs) {
 	if (!taked && controlling) {
 		FigureState.x = this->x;
 		FigureState.y = this->y;
 		ghostState.y = this->y;
+
+
+		auto ghost_ = ghostBlocks.begin();
+
+		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end(); it++) {
+			TetrisBlocks* A = *it;
+			(*ghost_)->x = A->x;
+			(*ghost_)->y = A->y;
+			(*ghost_)->ThisCollider->posX = A->x;
+			(*ghost_)->ThisCollider->posY = A->y;
+
+			ghost_++;
+		}
+
+
+
+
 
 		if (Evento.type == ALLEGRO_EVENT_KEY_DOWN) {
 			keys[Evento.keyboard.keycode] = true;
@@ -178,49 +197,77 @@ void TetrisFigures::update(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Event
 		if (Evento.type == ALLEGRO_EVENT_KEY_UP)
 			keys[Evento.keyboard.keycode] = false;
 
-		if (Evento.keyboard.keycode == ALLEGRO_KEY_DOWN)
+		if (Evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
 			funcMov(0, -32);
+			auxStatic = false;
+
+		}
 
 
 
 		if (Evento.type == ALLEGRO_EVENT_TIMER)
-			if (Evento.timer.source == Timer)
+			if (Evento.timer.source == TimerVelocity) {
 				funcMov(0, -32);
-
+				auxStatic = false;
+			}
 
 
 		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
-			if ((*it)->IsDeletable()) {
-				(*it)->DestroyTetrisBlocks();
-				it = blocks.erase(it);
-			}
-			else {
-				for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
-					if ((*it)->ThisCollider->Collision((*it2))) {
-						funcMov(x - FigureState.x, y - FigureState.y);
-						if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
-							StaticTime++;
-							if (StaticTime >= 2) {
-								controlling = false;
-							}
-						}
+
+			for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
+				if ((*it)->ThisCollider->Collision((*it2))) {
+					funcMov(x - FigureState.x, y - FigureState.y);
+					if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+						auxStatic = true; 
 					}
 				}
-				for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
-					if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
-						funcMov(x - FigureState.x, y - FigureState.y);
-						if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY) {
-							StaticTime++;
-							if (StaticTime >= 2) {
-								controlling = false;
-							}
-						}
+			}
+			for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
+				if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
+					funcMov(x - FigureState.x, y - FigureState.y);
+					if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY) {
+						auxStatic = true;
 					}
 				}
-				it++;
 			}
+			it++;
 
 		}
+
+
+
+		if (auxStatic) {
+			if (Evento.type == ALLEGRO_EVENT_TIMER)
+				if (Evento.timer.source == TimerSecs) {
+					StaticTime++;
+					if (StaticTime >= 2) {
+						funcMov(0, -32);
+						for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
+							for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
+								if ((*it)->ThisCollider->Collision((*it2))) {
+									funcMov(x - FigureState.x, y - FigureState.y);
+									if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+										controlling = false;
+									}
+								}
+							}
+							for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
+								if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
+									funcMov(x - FigureState.x, y - FigureState.y);
+									if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY) {
+										controlling = false;
+									}
+								}
+							}
+							it++;
+						}
+						if (controlling) {
+							StaticTime = 0;
+						}
+					}
+				}
+		}
+
 
 		toDeepGhost();
 
@@ -423,5 +470,18 @@ void TetrisFigures::toDeepGhost() {
 			}
 			it++;
 		}
+
 	}
+
+	//Fix de Ghost when take a block
+	auto ghost_ = ghostBlocks.begin();
+	for (auto it = blocks.begin(); it != blocks.end(); it++) {
+		auto A = *it;
+		if ((*ghost_)->y < A->y) {
+			for (auto it = ghostBlocks.begin(); it != ghostBlocks.end(); it++)
+				(*it)->mov();
+		}
+		ghost_++;
+	}
+
 }

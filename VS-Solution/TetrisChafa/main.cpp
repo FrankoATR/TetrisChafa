@@ -52,9 +52,13 @@ ALLEGRO_DISPLAY* window;
 ALLEGRO_EVENT Evento;
 ALLEGRO_TRANSFORM tr;
 ALLEGRO_SAMPLE* menu_song;
-ALLEGRO_SAMPLE* game_song;
+ALLEGRO_SAMPLE* game_song0;
+ALLEGRO_SAMPLE* game_song1;
+ALLEGRO_SAMPLE* game_song2;
 ALLEGRO_SAMPLE_INSTANCE* menu_song_Instance;
-ALLEGRO_SAMPLE_INSTANCE* game_song_Instance;
+ALLEGRO_SAMPLE_INSTANCE* game_song0_Instance;
+ALLEGRO_SAMPLE_INSTANCE* game_song1_Instance;
+ALLEGRO_SAMPLE_INSTANCE* game_song2_Instance;
 ALLEGRO_BITMAP* menu_sprite;
 ALLEGRO_BITMAP* bg_sprite;
 ALLEGRO_BITMAP* iconGame;
@@ -81,6 +85,17 @@ ALLEGRO_BITMAP* key_z;
 ALLEGRO_BITMAP* key_x;
 ALLEGRO_BITMAP* key_leftClick;
 ALLEGRO_BITMAP* key_esc;
+
+ALLEGRO_BITMAP* colorBlocks[4];
+
+struct Songs {
+	ALLEGRO_SAMPLE_INSTANCE* song;
+	int duration;
+}songsList[3];
+
+int MusicDuration;
+int idMusic = 0;
+float volumeIntermediate = 0.0;
 
 //WINDOW VARS
 int ancho = 32 * 36;
@@ -162,38 +177,35 @@ int menu_game(){
 		if (Evento.type == ALLEGRO_EVENT_TIMER) {
 			if (Evento.timer.source == secsTimer) {
 				int xPosAux = (rand() % 32) * 32;
-				int colorAux = rand() % 4;
-				ALLEGRO_BITMAP* spriteAux;
 
-				switch (colorAux) {
-				case 0:
-					spriteAux = block_green;
-					break;
-				case 1:
-					spriteAux = block_black;
-					break;
-				case 2:
-					spriteAux = block_blue;
-					break;
-				case 3:
-					spriteAux = block_red;
-					break;
-				default:
-					spriteAux = block_green;
-					break;
-				}
-
-				figures.push_back(new TetrisFigures(xPosAux, 32 * -5, rand() % cantFig, rand() % 5, spriteAux, block_ghost));
+				figures.push_back(new TetrisFigures(xPosAux, 32 * -5, rand() % cantFig, rand() % 5, colorBlocks[rand() % 4], block_ghost));
 
 
 
 			}
-			if (Evento.timer.source == fallingTimer) {
+			if (Evento.timer.source == FPS) {
 
 
 				for (auto it = figures.begin(); it != figures.end();) {
 					if ((*it)->y <= 32 * 35) {
-						(*it)->funcMov(0, -32);
+						(*it)->funcMov(0, -4);
+						it++;
+					}
+					else {
+						(*it)->DestroyTetrisFigures();
+						it = figures.erase(it);
+					}
+				}
+
+			}
+			if (Evento.timer.source == secsTimer) {
+				for (auto it = figures.begin(); it != figures.end();) {
+					if ((*it)->y <= 32 * 35) {
+						int auxRot = rand() % 4;
+						if (auxRot == 0)
+							(*it)->rotate(true);
+						else if (auxRot == 1)
+							(*it)->rotate(false);
 						it++;
 					}
 					else {
@@ -211,7 +223,7 @@ int menu_game(){
 		al_scale_transform(&tr, 1.7, 1.7);
 		al_use_transform(&tr);
 
-		drawText(32 * 1, 32 * 1, "TetrisChafa v1.23");
+		drawText(32 * 1, 32 * 1, "TetrisChafa v1.24");
 
 		al_identity_transform(&tr);
 		al_scale_transform(&tr, 1.5, 1.5);
@@ -238,11 +250,12 @@ int menu_game(){
 			}
 
 			al_stop_sample_instance(menu_song_Instance);
-			al_play_sample_instance(game_song_Instance);
+
 			
 			int tmpPoints = game_in();
 
-			al_stop_sample_instance(game_song_Instance);
+			al_stop_sample_instance(songsList[idMusic].song);
+
 			al_play_sample_instance(menu_song_Instance);
 
 			al_set_timer_speed(fallingTimer, 0.2);
@@ -340,40 +353,42 @@ int game_in() {
 	velocityLevel = 1;
 	auxMinCount = 1;
 
+	idMusic = rand() % 3;
+	MusicDuration = songsList[idMusic].duration;
+	volumeIntermediate = 0.0;
+	float auxVolumeCount = 0;
+
+	al_set_sample_instance_gain(songsList[idMusic].song, volumeIntermediate);
+	al_play_sample_instance(songsList[idMusic].song);
+
 	al_set_timer_speed(fallingTimer, 1.0);
 
 
 	//Initialize Objects in game
-	for (int i = 0; i < 26; i++) {
+	for (int i = 0; i < 29; i++) {
 		CollisionBlocks.push_back(new Collider(32*2, 32*i, 31, 31, 0, true));
+		CollisionBlocks.push_back(new Collider(32*1, 32*i, 31, 31, 0, true));
+		CollisionBlocks.push_back(new Collider(32*0, 32*i, 31, 31, 0, true));
+
+
 		CollisionBlocks.push_back(new Collider(32*13, 32*i, 31, 31, 0, true));
+		CollisionBlocks.push_back(new Collider(32*14, 32*i, 31, 31, 0, true));
+		CollisionBlocks.push_back(new Collider(32*15, 32*i, 31, 31, 0, true));
 	}
-	for (int i = 2; i < 14; i++) 
-		CollisionBlocks.push_back(new Collider(32 * i, 32*26, 31, 31, 0, true));
+	for (int i = 3; i < 13; i++) {
+		CollisionBlocks.push_back(new Collider(32 * i, 32 * 26, 31, 31, 0, true));
+		CollisionBlocks.push_back(new Collider(32 * i, 32 * 27, 31, 31, 0, true));
+		CollisionBlocks.push_back(new Collider(32 * i, 32 * 28, 31, 31, 0, true));
+
+	}
 
 	for (int i = 0; i < 3; i++) {
-		int colorAux = rand() % 4;
-		ALLEGRO_BITMAP* spriteAux;
-		switch (colorAux) {
-		case 0:
-			spriteAux = block_green;
-			break;
-		case 1:
-			spriteAux = block_black;
-			break;
-		case 2:
-			spriteAux = block_blue;
-			break;
-		case 3:
-			spriteAux = block_red;
-			break;
-		default:
-			spriteAux = block_green;
-			break;
-		}
-		queue_figures.push_front(new TetrisFigures(32 * 18, 32 * 12 + (i * 6 * 32), rand() % cantFig, rand() % 5, spriteAux, block_ghost));
+
+		queue_figures.push_front(new TetrisFigures(32 * 18, 32 * 12 + (i * 6 * 32), rand() % cantFig, rand() % 5, colorBlocks[rand() % 4], block_ghost));
 
 	}
+
+
 
 
 	while (true) {
@@ -391,6 +406,9 @@ int game_in() {
 				//cout << "Total Colliders: " << CollisionBlocks.size() << endl;
 				//timerfunc();
 
+				//cout << "Duration: " << MusicDuration << endl;
+				//cout << "MusicId " << idMusic << endl;
+
 				if (auxMinCount >= 60) {
 					auxMinCount = 1;
 					velocityLevel++;
@@ -401,7 +419,39 @@ int game_in() {
 				}
 				else auxMinCount++;
 
+				if (MusicDuration == 0) {
+					al_stop_sample_instance(songsList[idMusic].song);
+					idMusic++;
+					if (idMusic >= 3) idMusic = 0;
+					MusicDuration = songsList[idMusic].duration;
+					al_play_sample_instance(songsList[idMusic].song);
+
+				}
+				else {
+					MusicDuration--;
+				}
+
+
 			}
+			if (Evento.timer.source == FPS) {
+				if (MusicDuration <= 5) {
+					auxVolumeCount -= 0.01;
+					volumeIntermediate = exp(auxVolumeCount - 5);
+					al_set_sample_instance_gain(songsList[idMusic].song, volumeIntermediate);
+
+				}
+				else {
+					if (volumeIntermediate < 0.5) {
+						auxVolumeCount += 0.01;
+						volumeIntermediate = exp(auxVolumeCount - 5);
+						al_set_sample_instance_gain(songsList[idMusic].song, volumeIntermediate);
+					}
+					else {
+						volumeIntermediate = 0.5;
+					}
+				}
+			}
+			//cout << volumeIntermediate << endl;
 		}
 
 
@@ -425,6 +475,8 @@ int game_in() {
 						figures.erase(actual);
 						holdFigure = (*actual);
 						aux->funcMovTo(6 * 32, 1 * 32);
+						aux->StaticTime = 0;
+						aux->auxStatic = false;
 						figures.push_back(aux);
 					}
 					holdFigure->funcMovTo(32 * 28, 32 * 10);
@@ -456,7 +508,7 @@ int game_in() {
 		if (!figures.empty()) {
 			for (list<TetrisFigures*>::iterator it = figures.begin(); it != figures.end();) {
 				if (!(*it)->Empty()) {
-					(*it)->update(event_queue, Evento, fallingTimer);
+					(*it)->update(event_queue, Evento, fallingTimer, secsTimer);
 					(*it)->Display();
 					it++;
 				}
@@ -503,6 +555,8 @@ int game_in() {
 		displayInfoInGame(BONUSPOINTS);
 
 		//displayGridAndCoordinates();
+		//displayAllColliders();
+
 
 		al_flip_display();
 	}
@@ -585,40 +639,31 @@ void displayGridAndCoordinates() {
 
 
 void displayAllColliders() {
-	/*
+	
 	// ******************** MOSTRAR COLLIDERS ********************
-	if (CollidersTetrisON) {
-		for (list<TetrisFigures*>::iterator it = figures.begin(); it != figures.end(); it++) {
-			for (list<TetrisBlocks*>::iterator it2 = (*it)->blocks.begin(); it2 != (*it)->blocks.end(); it2++) {
-				(*it2)->ThisCollider->DisplayFigureCollision();
-				al_draw_text(coords, al_map_rgb(255, 255, 255), (*it2)->ThisCollider->posX + 5, (*it2)->ThisCollider->posY + 5, NULL, ("(" + to_string((*it2)->ThisCollider->posX) + "," + to_string((*it2)->ThisCollider->posY) + ")").c_str());
-				al_draw_text(coords, al_map_rgb(255, 255, 255), (*it2)->x + 5, (*it2)->y + 25, NULL, ("(" + to_string((*it2)->x) + "," + to_string((*it2)->y) + ")").c_str());
-			}
-		}
 
-		for (list<TetrisBlocks*>::iterator it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
-			(*it)->ThisCollider->DisplayFigureCollision();
-		}
-
-	}
-	if (BOTON4->Pressed()) {
-		if (!CollidersTetrisON) CollidersTetrisON = true;
-		else CollidersTetrisON = false;
-	}
-	if (CollidersBackgroundON) {
-		for (list<Collider*>::iterator it = CollisionBlocks.begin(); it != CollisionBlocks.end(); it++) {
-			(*it)->DisplayFigureCollision();
-			al_draw_text(coords, al_map_rgb(255, 255, 255), (*it)->posX + 5, (*it)->posY + 5, NULL, ("(" + to_string((*it)->posX) + "," + to_string((*it)->posY) + ")").c_str());
-			al_draw_text(coords, al_map_rgb(255, 255, 255), (*it)->posX + 5, (*it)->posY + 25, NULL, ("(" + to_string((*it)->posX+ (*it)->dimX) + "," + to_string((*it)->posY + (*it)->dimY) + ")").c_str());
-
+	for (list<TetrisFigures*>::iterator it = figures.begin(); it != figures.end(); it++) {
+		for (list<TetrisBlocks*>::iterator it2 = (*it)->blocks.begin(); it2 != (*it)->blocks.end(); it2++) {
+			(*it2)->ThisCollider->DisplayFigureCollision();
+			//al_draw_text(globalFont, al_map_rgb(255, 255, 255), (*it2)->ThisCollider->posX + 5, (*it2)->ThisCollider->posY + 5, NULL, ("(" + to_string((*it2)->ThisCollider->posX) + "," + to_string((*it2)->ThisCollider->posY) + ")").c_str());
+			//al_draw_text(globalFont, al_map_rgb(255, 255, 255), (*it2)->x + 5, (*it2)->y + 25, NULL, ("(" + to_string((*it2)->x) + "," + to_string((*it2)->y) + ")").c_str());
 		}
 	}
-	if (BOTON6->Pressed()) {
-		if (!CollidersBackgroundON) CollidersBackgroundON = true;
-		else CollidersBackgroundON = false;
+
+	for (list<TetrisBlocks*>::iterator it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
+		(*it)->ThisCollider->DisplayFigureCollision();
 	}
+
+
+	for (list<Collider*>::iterator it = CollisionBlocks.begin(); it != CollisionBlocks.end(); it++) {
+		(*it)->DisplayFigureCollision();
+		//al_draw_text(globalFont, al_map_rgb(255, 255, 255), (*it)->posX + 5, (*it)->posY + 5, NULL, ("(" + to_string((*it)->posX) + "," + to_string((*it)->posY) + ")").c_str());
+		//al_draw_text(globalFont, al_map_rgb(255, 255, 255), (*it)->posX + 5, (*it)->posY + 25, NULL, ("(" + to_string((*it)->posX+ (*it)->dimX) + "," + to_string((*it)->posY + (*it)->dimY) + ")").c_str());
+
+	}
+
 	// ******************** ********************* ********************
-	*/
+	
 }
 
 void drawText(int x, int y, string text) {
@@ -644,27 +689,7 @@ void genereteFig() {
 		posYAux += 32 * 6;
 	}
 
-	int colorAux = rand() % 4;
-	ALLEGRO_BITMAP* spriteAux;
-	switch (colorAux) {
-		case 0:
-			spriteAux = block_green;
-			break;
-		case 1:
-			spriteAux = block_black;
-			break;
-		case 2:
-			spriteAux = block_blue;
-			break;
-		case 3:
-			spriteAux = block_red;
-			break;
-		default:
-			spriteAux = block_green;
-			break;
-	}
-
-	queue_figures.push_back(new TetrisFigures(32 * 18, 32 * 22, rand() % cantFig, rand() % 5, spriteAux, block_ghost));
+	queue_figures.push_back(new TetrisFigures(32 * 18, 32 * 22, rand() % cantFig, rand() % 5, colorBlocks[rand() % 4], block_ghost));
 
 }
 
@@ -684,9 +709,14 @@ void initialize() {
 	al_reserve_samples(2);
 
 	menu_song = al_load_sample("assets/music/neon-gaming.mp3");
-	game_song = al_load_sample("assets/music/kim-lightyear-legends.mp3");
+	game_song0 = al_load_sample("assets/music/kim-lightyear-legends.mp3");
+	game_song1 = al_load_sample("assets/music/machiavellian-nightmare.mp3");
+	game_song2 = al_load_sample("assets/music/rasputin-russia-tetris.mp3");
+
 	menu_song_Instance = al_create_sample_instance(menu_song);
-	game_song_Instance = al_create_sample_instance(game_song);
+	game_song0_Instance = al_create_sample_instance(game_song0);
+	game_song1_Instance = al_create_sample_instance(game_song1);
+	game_song2_Instance = al_create_sample_instance(game_song2);
 
 	window = al_create_display(ancho, alto);
 	al_set_window_title(window, "TetrisChafa");
@@ -712,9 +742,27 @@ void initialize() {
 
 	//MUSIC MIXER
 	al_set_sample_instance_playmode(menu_song_Instance, ALLEGRO_PLAYMODE_LOOP);
-	al_set_sample_instance_playmode(game_song_Instance, ALLEGRO_PLAYMODE_LOOP);
+	al_set_sample_instance_playmode(game_song0_Instance, ALLEGRO_PLAYMODE_ONCE);
+	al_set_sample_instance_playmode(game_song1_Instance, ALLEGRO_PLAYMODE_ONCE);
+	al_set_sample_instance_playmode(game_song2_Instance, ALLEGRO_PLAYMODE_ONCE);
+
 	al_attach_sample_instance_to_mixer(menu_song_Instance, al_get_default_mixer());
-	al_attach_sample_instance_to_mixer(game_song_Instance, al_get_default_mixer());
+	al_attach_sample_instance_to_mixer(game_song0_Instance, al_get_default_mixer());
+	al_attach_sample_instance_to_mixer(game_song1_Instance, al_get_default_mixer());
+	al_attach_sample_instance_to_mixer(game_song2_Instance, al_get_default_mixer());
+
+
+	al_set_sample_instance_gain(menu_song_Instance, 0.5);
+	al_set_sample_instance_gain(game_song0_Instance, 0.0);
+	al_set_sample_instance_gain(game_song1_Instance, 0.0);
+	al_set_sample_instance_gain(game_song2_Instance, 0.0);
+
+	songsList[0].song = game_song0_Instance;
+	songsList[0].duration = 195;
+	songsList[1].song = game_song1_Instance;
+	songsList[1].duration = 349;
+	songsList[2].song = game_song2_Instance;
+	songsList[2].duration = 260;
 
 	//FONTS 
 	globalFont = al_load_font("assets/fonts/MinecraftTen-VGORe.ttf", 70, 0);
@@ -731,6 +779,11 @@ void initialize() {
 	block_white1 = al_load_bitmap("assets/img/blocks/white1.png");
 	block_white2 = al_load_bitmap("assets/img/blocks/white2.png");
 	block_ghost = al_load_bitmap("assets/img/blocks/ghost.png");
+
+	colorBlocks[0] = block_green;
+	colorBlocks[1] = block_blue;
+	colorBlocks[2] = block_black;
+	colorBlocks[3] = block_red;
 
 	button_exit_t = al_load_bitmap("assets/img/buttons/exit_t.png");
 	button_exit_f = al_load_bitmap("assets/img/buttons/exit_f.png");
@@ -764,9 +817,14 @@ void endProgram() {
 	al_destroy_event_queue(event_queue);
 
 	al_destroy_sample(menu_song);
-	al_destroy_sample(game_song);
+	al_destroy_sample(game_song0);
+	al_destroy_sample(game_song1);
+	al_destroy_sample(game_song2);
+
 	al_destroy_sample_instance(menu_song_Instance);
-	al_destroy_sample_instance(game_song_Instance);
+	al_destroy_sample_instance(game_song0_Instance);
+	al_destroy_sample_instance(game_song1_Instance);
+	al_destroy_sample_instance(game_song2_Instance);
 
 	al_destroy_bitmap(bg_sprite);
 	al_destroy_bitmap(menu_sprite);

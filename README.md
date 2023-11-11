@@ -3,7 +3,7 @@ Totally inspired by one of my favorite games, Tetris, this is my first project o
 I want to share it with the game developer community.
 
 ## Download
-* [Direct download TetrisChafa](https://github.com/FrankoATR/TetrisChafa/blob/main/setup.msi?raw=true)
+* [Direct download TetrisChafa](https://github.com/FrankoATR/TetrisChafa/blob/main/setup-tetrischafa.msi?raw=true)
 
 ## Game Controls
 * Arrows:
@@ -29,7 +29,7 @@ I want to share it with the game developer community.
 
 
 ## General Information
-- Last Update 11/2023 (v1.23)
+- Last Update 11/2023 (v1.24)
 - Development date: (10/2021 - 11/2021) - El Salvador.
 - This is a small project that I did in my free time while attending university.
 
@@ -41,11 +41,11 @@ I want to share it with the game developer community.
 
 
 ## Features 
-- Menu has been added to know the controls.
-- The font was changed.
-- The icon was changed.
-- The Background menu was changed.
-- Fixed error that occurred when taking a block.
+- 2 new songs during the game.
+- Fixed waiting time before figures freeze.
+- The volume level was changed.
+- 1 new figure.
+
 
 ## Preview
 ![Preview](./img/preview1.png)
@@ -54,7 +54,7 @@ I want to share it with the game developer community.
 
 
 ## Setup
-To play you just have to download the setup and continue installing the game, you can also download fix setup if your files get damaged or you want to uninstall the game.
+To play you just have to download the setup and continue installing the game, you can also fix if your files get damaged or you want to uninstall the game.
 
 ## Usage
 If you want to build it yourself, feel free to use and modify everything in VS-Solution; To do this you will need to have Visual Studio.

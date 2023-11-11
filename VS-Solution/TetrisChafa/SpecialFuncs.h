@@ -94,7 +94,7 @@ void Takeaobj(TetrisBlocks* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT
 	int Mx = Evento.mouse.x;
 	int My = Evento.mouse.y;
 
-	if (obj->taked == false and !globalTaked and *B >= 1000) {
+	if (obj->taked == false and !globalTaked ) {
 		if (Evento.type == ALLEGRO_EVENT_MOUSE_AXES || Evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
 			if (Mx >= obj->x && Mx <= obj->x + obj->sprite_w && My >= obj->y && My <= obj->y + obj->sprite_h) {
 				if (Evento.mouse.button & 1) {

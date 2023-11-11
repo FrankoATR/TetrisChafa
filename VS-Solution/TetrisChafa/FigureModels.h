@@ -256,6 +256,38 @@ struct FigureModel {
 								}
 	};
 
+	FigureModel soloCube = { 10, 4, {
+									{
+										{0,0,0,0,0},
+										{0,0,0,1,0},
+										{0,0,0,0,0},
+										{0,0,0,0,0},
+										{0,0,0,0,0}
+									},
+									{
+										{0,0,0,0,0},
+										{0,0,0,0,0},
+										{0,0,0,0,0},
+										{0,0,0,1,0},
+										{0,0,0,0,0}
+									},
+									{
+										{0,0,0,0,0},
+										{0,0,0,0,0},
+										{0,0,0,0,0},
+										{0,1,0,0,0},
+										{0,0,0,0,0}
+									},
+									{
+										{0,0,0,0,0},
+										{0,1,0,0,0},
+										{0,0,0,0,0},
+										{0,0,0,0,0},
+										{0,0,0,0,0}
+									},
+							}
+	};
+
 	FigureModel figureModels[] = {
 		arrow,
 		recipe,
@@ -266,7 +298,8 @@ struct FigureModel {
 		LRigth,
 		LLeft,
 		spiral,
-		hiperLine
+		hiperLine,
+		soloCube
 	};
 
 	int cantFig = sizeof(figureModels) / sizeof(figureModels[0]);
