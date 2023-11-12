@@ -255,7 +255,7 @@ int menu_game() {
 		exitButton.Display(event_queue, Evento, proportion_W, proportion_H);
 
 
-		if (!(widtht_W < 1920 && height_W < 1080)) {
+		if (widtht_W == 1920 && height_W == 1080) {
 			if (isFullScreen) {
 				toWindowButton.Display(event_queue, Evento, proportion_W, proportion_H);
 				if (toWindowButton.Pressed() && WaitToChangeScreen <= 1) {
@@ -786,26 +786,26 @@ void initialize() {
 	al_set_window_title(window, "TetrisChafa");
 
 
-	if (widtht_W < 1920 && height_W < 1080) {
+	if (widtht_W == 1920 && height_W == 1080) {
+
+		window = al_create_display(widthORG, heightORG);
+		isFullScreen = false;
+		proportion_W = 1.0;
+		proportion_H = 1.0;
+		al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, false);
+		al_set_display_flag(window, ALLEGRO_WINDOWED, true);
+		al_set_window_position(window, widtht_W / 2 - widthORG / 2, (height_W / 2 - heightORG / 2));
+
+
+	}
+	else {
+
 			window = al_create_display(widtht_W, height_W);
 			isFullScreen = true;
 			proportion_W = float(widtht_W) / float(widthORG);
 			proportion_H = float(height_W) / float(heightORG);
 			al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, true);
 			al_set_display_flag(window, ALLEGRO_WINDOWED, false);
-			
-
-
-	}
-	else {
-			window = al_create_display(widthORG, heightORG);
-			isFullScreen = false;
-			proportion_W = 1.0;
-			proportion_H = 1.0;
-			al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, false);
-			al_set_display_flag(window, ALLEGRO_WINDOWED, true);
-			al_set_window_position(window, widtht_W / 2 - widthORG / 2, (height_W / 2 - heightORG / 2));
-
 	}
 
 
