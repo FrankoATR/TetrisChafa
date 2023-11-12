@@ -42,7 +42,7 @@ I want to share it with the game developer community.
 
 ## Features 
 - A new level has been added: level 11
-- Optional full screen option is added for (1920x1080) and is required if the resolution is lower.
+- Optional fullscreen option is added for (1920x1080) and is required if the resolution is lower.
 
 
 ## Preview
