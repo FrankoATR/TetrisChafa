@@ -20,7 +20,7 @@ float RandomFunc(int limit_A, int limit_B) {
 
 
 int checkEachFile() {
-	Collider tmpcheck(96+32/2, 192+64/2, 1, 1, 0, false);
+	Collider tmpcheck(96+32/2, 192+32/2, 1, 1, 0, false);
 	int fileCanDestroy = 0;
 	int BONUS = 0;
 
@@ -90,11 +90,11 @@ void newCheckEachFile() {
 
 }
 
-void Takeaobj(TetrisBlocks* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, int *B, bool globalTaked){
-	int Mx = Evento.mouse.x;
-	int My = Evento.mouse.y;
+void Takeaobj(TetrisBlocks* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, int *B, bool globalTaked, float proportion_W, float proportion_H){
+	int Mx = Evento.mouse.x / proportion_W;
+	int My = Evento.mouse.y / proportion_H;
 
-	if (obj->taked == false and !globalTaked ) {
+	if (obj->taked == false and !globalTaked && *B >= 1000) {
 		if (Evento.type == ALLEGRO_EVENT_MOUSE_AXES || Evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
 			if (Mx >= obj->x && Mx <= obj->x + obj->sprite_w && My >= obj->y && My <= obj->y + obj->sprite_h) {
 				if (Evento.mouse.button & 1) {

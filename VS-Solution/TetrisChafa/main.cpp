@@ -76,6 +76,10 @@ ALLEGRO_BITMAP* button_exit_t;
 ALLEGRO_BITMAP* button_exit_f;
 ALLEGRO_BITMAP* button_controls_t;
 ALLEGRO_BITMAP* button_controls_f;
+ALLEGRO_BITMAP* button_toFull_t;
+ALLEGRO_BITMAP* button_toFull_f;
+ALLEGRO_BITMAP* button_toWindow_t;
+ALLEGRO_BITMAP* button_toWindow_f;
 ALLEGRO_BITMAP* key_up;
 ALLEGRO_BITMAP* key_down;
 ALLEGRO_BITMAP* key_left;
@@ -98,17 +102,21 @@ int idMusic = 0;
 float volumeIntermediate = 0.0;
 
 //WINDOW VARS
-int ancho = 32 * 36;
-int alto = 32 * 29;
-int ancho_W = GetSystemMetrics(SM_CXSCREEN);
-int alto_W = GetSystemMetrics(SM_CYSCREEN);
+int widthORG = 32 * 36;
+int heightORG = 32 * 29;
+int widtht_W = GetSystemMetrics(SM_CXSCREEN);
+int height_W = GetSystemMetrics(SM_CYSCREEN);
+bool isFullScreen;
+
+float proportion_W = float(widtht_W) / float(widthORG);
+float proportion_H = float(height_W) / float(heightORG);
 
 //OTHER VARS
 int segundo = 1000;
 int countFPS = 0;
 bool ButtonPressed = false;
 bool blockTaked = false;
-int auxMinCount = 1;
+int auxMinCount = 60;
 int velocityLevel = 1;
 bool alreadyHold = false;
 TetrisFigures* holdFigure = NULL;
@@ -148,7 +156,7 @@ int main() {
 	return 0;
 }
 
-int menu_game(){
+int menu_game() {
 
 	al_play_sample_instance(menu_song_Instance);
 
@@ -156,10 +164,13 @@ int menu_game(){
 
 	int MaxPoints = 0;
 	bool inControls = false;
+	int WaitToChangeScreen = 0;
 
 	Buttons playButton(450, 350, 200, 100, button_play_f, button_play_t);
 	Buttons controlsButton(410, 500, 280, 100, button_controls_f, button_controls_t);
 	Buttons exitButton(450, 650, 200, 100, button_exit_f, button_exit_t);
+	Buttons toFullButton(32*34, 32*1, 50, 50, button_toFull_f, button_toFull_t);
+	Buttons toWindowButton(32 * 34, 32 * 1, 50, 50, button_toWindow_f, button_toWindow_t);
 
 	while (true) {
 
@@ -220,24 +231,62 @@ int menu_game(){
 
 
 		al_identity_transform(&tr);
-		al_scale_transform(&tr, 1.7, 1.7);
+		al_scale_transform(&tr, proportion_W* 1.5, proportion_H* 1.5);
 		al_use_transform(&tr);
+		drawText(32 * 5, 32 * 1, "TetrisChafa");
 
-		drawText(32 * 1, 32 * 1, "TetrisChafa v1.24");
 
 		al_identity_transform(&tr);
-		al_scale_transform(&tr, 1.5, 1.5);
+		al_scale_transform(&tr, proportion_W * 0.4, proportion_H * 0.4);
 		al_use_transform(&tr);
-
-		drawText(32 * 3, 32 * 4, "Max score: " + to_string(MaxPoints));
+		drawText(32 * 1, 32 * 70, "v1.25");
 
 		al_identity_transform(&tr);
-		al_scale_transform(&tr, 1, 1);
+		al_scale_transform(&tr, proportion_W*0.7, proportion_H*0.7);
+		al_use_transform(&tr);
+		drawText(32 * 18, 32 * 8, "Max score: " + to_string(MaxPoints));
+
+		al_identity_transform(&tr);
+		al_scale_transform(&tr, proportion_W, proportion_H);
 		al_use_transform(&tr);
 
-		playButton.Display(event_queue, Evento);
-		controlsButton.Display(event_queue, Evento);
-		exitButton.Display(event_queue, Evento);
+		playButton.Display(event_queue, Evento, proportion_W, proportion_H);
+		controlsButton.Display(event_queue, Evento, proportion_W, proportion_H);
+		exitButton.Display(event_queue, Evento, proportion_W, proportion_H);
+
+
+		if (!(widtht_W < 1920 && height_W < 1080)) {
+			if (isFullScreen) {
+				toWindowButton.Display(event_queue, Evento, proportion_W, proportion_H);
+				if (toWindowButton.Pressed() && WaitToChangeScreen <= 1) {
+					isFullScreen = !isFullScreen;
+					proportion_W = 1.0;
+					proportion_H = 1.0;
+					al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, false);
+					al_set_display_flag(window, ALLEGRO_WINDOWED, true);
+					al_resize_display(window, widthORG, heightORG);
+					al_set_window_position(window, widtht_W / 2 - widthORG / 2, (height_W / 2 - heightORG / 2));
+
+					WaitToChangeScreen = 30;
+				}
+			}
+			else {
+				toFullButton.Display(event_queue, Evento, proportion_W, proportion_H);
+				if (toFullButton.Pressed() && WaitToChangeScreen <= 1) {
+					isFullScreen = !isFullScreen;
+					proportion_W = float(widtht_W) / float(widthORG);
+					proportion_H = float(height_W) / float(heightORG);
+					al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, true);
+					al_set_display_flag(window, ALLEGRO_WINDOWED, false);
+					al_resize_display(window, widtht_W, height_W);
+
+					WaitToChangeScreen = 30;
+
+				}
+			}
+
+			if (WaitToChangeScreen > 0) WaitToChangeScreen--;
+		}
 
 
 		if (exitButton.Pressed()) return 0;
@@ -289,6 +338,9 @@ void menu_controls_in() {
 
 		al_clear_to_color(al_map_rgb(255, 255, 255));
 
+		al_identity_transform(&tr);
+		al_scale_transform(&tr, proportion_W, proportion_H);
+		al_use_transform(&tr);
 		al_draw_bitmap(menu_sprite, 0, 0, 0);
 
 		if (Evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -301,12 +353,12 @@ void menu_controls_in() {
 			}
 
 		al_identity_transform(&tr);
-		al_scale_transform(&tr, 2, 2);
+		al_scale_transform(&tr, proportion_W*2, proportion_H*2);
 		al_use_transform(&tr);
 		drawText(32 * 4, 32 * 0 + 16, "Controls");
 
 		al_identity_transform(&tr);
-		al_scale_transform(&tr, 1, 1);
+		al_scale_transform(&tr, proportion_W, proportion_H);
 		al_use_transform(&tr);
 
 		al_draw_bitmap(key_right, 32 * 2, 32 * 5, NULL);
@@ -349,14 +401,13 @@ int game_in() {
 	bool CollidersTetrisON = false;
 	bool CollidersBackgroundON = false;
 	bool auxTaked = false;
-
+	float auxVolumeCount = 0;
 	velocityLevel = 1;
-	auxMinCount = 1;
+	auxMinCount = 60;
 
 	idMusic = rand() % 3;
 	MusicDuration = songsList[idMusic].duration;
 	volumeIntermediate = 0.0;
-	float auxVolumeCount = 0;
 
 	al_set_sample_instance_gain(songsList[idMusic].song, volumeIntermediate);
 	al_play_sample_instance(songsList[idMusic].song);
@@ -409,15 +460,22 @@ int game_in() {
 				//cout << "Duration: " << MusicDuration << endl;
 				//cout << "MusicId " << idMusic << endl;
 
-				if (auxMinCount >= 60) {
-					auxMinCount = 1;
+				if (auxMinCount < 1) {
 					velocityLevel++;
-					if (velocityLevel >= 10)
-						velocityLevel = 10;
 
-					al_set_timer_speed(fallingTimer, 1.0 - (velocityLevel - 1) * 0.1);
+					if (velocityLevel < 10) auxMinCount = 60;
+					else auxMinCount = 120;
+
+					if (velocityLevel <= 10) {
+						al_set_timer_speed(fallingTimer, 1.0 - (velocityLevel - 1) * 0.1);
+					}
+					else if (velocityLevel >= 11) {
+						velocityLevel = 11;
+						al_set_timer_speed(fallingTimer, 0.05);
+					}
+
 				}
-				else auxMinCount++;
+				else auxMinCount--;
 
 				if (MusicDuration == 0) {
 					al_stop_sample_instance(songsList[idMusic].song);
@@ -485,14 +543,19 @@ int game_in() {
 			}
 		}
 
-		al_clear_to_color(al_map_rgb(0, 0, 0));
-		al_draw_bitmap(bg_sprite , 0, 0, 0);
+		al_clear_to_color(al_map_rgb(64, 4, 38));
+
+		al_identity_transform(&tr);
+		al_scale_transform(&tr, proportion_W, proportion_H);
+		al_use_transform(&tr);
+
+		al_draw_bitmap(bg_sprite, 32*2, 32*2, 0);
 
 		auxTaked = false;
 		for (list<TetrisBlocks*>::iterator it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
 			(*it)->Display();
 
-			Takeaobj(*it, event_queue, Evento, &BONUSPOINTS, blockTaked);
+			Takeaobj(*it, event_queue, Evento, &BONUSPOINTS, blockTaked, proportion_W, proportion_H);
 			if ((*it)->taked) {
 				blockTaked = true;
 				auxTaked = true;
@@ -548,7 +611,7 @@ int game_in() {
 				*/
 				cleanAllInGame();
 				ButtonPressed = true;
-				return 0;
+				return BONUSPOINTS;
 			}
 		}
 
@@ -592,15 +655,17 @@ void cleanAllInGame() {
 
 void displayInfoInGame(int BonusPoints) {
 
+
+
 	al_identity_transform(&tr);
-	al_scale_transform(&tr, 0.7, 0.7);
+	al_scale_transform(&tr, proportion_W*0.7, proportion_H*0.7);
 	al_use_transform(&tr);
 
 	drawText(32 * 21, 32 * 2, "Move 1 block for 1000");
 	drawText(32 * 21, 32 * 4, "Score: " + to_string(BonusPoints));
 	drawText(32 * 21, 32 * 6, "Level: " + to_string(velocityLevel));
-	if (velocityLevel <= 9)
-		drawText(32 * 21, 32 * 8, "Next level in: " + to_string(60 - auxMinCount));
+	if (velocityLevel <= 10)
+		drawText(32 * 21, 32 * 8, "Next level in: " + to_string(auxMinCount));
 	else
 		drawText(32 * 21, 32 * 8, "Final level");
 	drawText(32 * 21, 32 * 10, "Next figures ");
@@ -608,32 +673,32 @@ void displayInfoInGame(int BonusPoints) {
 	drawText(32 * 41, 32 * 10, "Hold ");
 
 	al_identity_transform(&tr);
-	al_scale_transform(&tr, 1, 1);
+	al_scale_transform(&tr, proportion_W, proportion_H);
 	al_use_transform(&tr);
 }
 
 void displayGridAndCoordinates() {
 	int block_pixels = 32;
-	for (int i = 0; i <= ancho / block_pixels; i++)
-		al_draw_line(i * block_pixels, 0, i * block_pixels, alto, al_map_rgb(255, 255, 255), 1.0f);
+	for (int i = 0; i <= widthORG / block_pixels; i++)
+		al_draw_line(i * block_pixels, 0, i * block_pixels, heightORG, al_map_rgb(255, 255, 255), 1.0f);
 
-	for (int j = 0; j <= alto / block_pixels; j++)
-		al_draw_line(0, j * block_pixels, ancho, j * block_pixels, al_map_rgb(255, 255, 255), 1.0f);
+	for (int j = 0; j <= heightORG / block_pixels; j++)
+		al_draw_line(0, j * block_pixels, widthORG, j * block_pixels, al_map_rgb(255, 255, 255), 1.0f);
 
 
 	al_identity_transform(&tr);
-	al_scale_transform(&tr, 0.2, 0.2);
+	al_scale_transform(&tr, proportion_W * 0.2, proportion_H * 0.2);
 	al_use_transform(&tr);
 
-	for (int i = 0; i <= ancho / block_pixels; i++) {
-		for (int j = 0; j <= alto / block_pixels; j++) {
+	for (int i = 0; i <= widthORG / block_pixels; i++) {
+		for (int j = 0; j <= heightORG / block_pixels; j++) {
 			drawText(i * block_pixels * 5, (j * block_pixels * 5) + 20, to_string(i * block_pixels));
 			drawText(i * block_pixels * 5, (j * block_pixels * 5) + 80, to_string(j * block_pixels));
 		}
 	}
 
 	al_identity_transform(&tr);
-	al_scale_transform(&tr, 1, 1);
+	al_scale_transform(&tr, proportion_W, proportion_H);
 	al_use_transform(&tr);
 }
 
@@ -718,9 +783,42 @@ void initialize() {
 	game_song1_Instance = al_create_sample_instance(game_song1);
 	game_song2_Instance = al_create_sample_instance(game_song2);
 
-	window = al_create_display(ancho, alto);
 	al_set_window_title(window, "TetrisChafa");
-	al_set_window_position(window, ancho_W / 2 - ancho / 2, (alto_W / 2 - alto / 2));
+
+
+	if (widtht_W < 1920 && height_W < 1080) {
+			window = al_create_display(widtht_W, height_W);
+			isFullScreen = true;
+			proportion_W = float(widtht_W) / float(widthORG);
+			proportion_H = float(height_W) / float(heightORG);
+			al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, true);
+			al_set_display_flag(window, ALLEGRO_WINDOWED, false);
+			
+
+
+	}
+	else {
+			window = al_create_display(widthORG, heightORG);
+			isFullScreen = false;
+			proportion_W = 1.0;
+			proportion_H = 1.0;
+			al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, false);
+			al_set_display_flag(window, ALLEGRO_WINDOWED, true);
+			al_set_window_position(window, widtht_W / 2 - widthORG / 2, (height_W / 2 - heightORG / 2));
+
+	}
+
+
+	//al_set_window_position(window, widtht_W / 2 - widthORG / 2, (height_W / 2 - heighORG / 2));
+
+
+	/*
+		ALLEGRO_MONITOR_INFO info;
+		int i = 0;
+		do {
+			al_get_monitor_info(i++, &info);
+		} while (!(info.x1 == 0 && info.y1 == 0));
+	*/
 
 	secsTimer = al_create_timer(1.0);
 	fallingTimer = al_create_timer(1.0);
@@ -791,6 +889,10 @@ void initialize() {
 	button_play_f = al_load_bitmap("assets/img/buttons/play_f.png");
 	button_controls_t = al_load_bitmap("assets/img/buttons/controls_t.png");
 	button_controls_f = al_load_bitmap("assets/img/buttons/controls_f.png");
+	button_toFull_t = al_load_bitmap("assets/img/buttons/toFull_t.png");
+	button_toFull_f = al_load_bitmap("assets/img/buttons/toFull_f.png");
+	button_toWindow_t = al_load_bitmap("assets/img/buttons/toWindow_t.png");
+	button_toWindow_f = al_load_bitmap("assets/img/buttons/toWindow_f.png");
 
 	key_up = al_load_bitmap("assets/img/controls/up.png");
 	key_down = al_load_bitmap("assets/img/controls/down.png");
@@ -844,6 +946,10 @@ void endProgram() {
 	al_destroy_bitmap(button_play_f);
 	al_destroy_bitmap(button_controls_t);
 	al_destroy_bitmap(button_controls_f);
+	al_destroy_bitmap(button_toFull_t);
+	al_destroy_bitmap(button_toFull_f);
+	al_destroy_bitmap(button_toWindow_t);
+	al_destroy_bitmap(button_toWindow_f);
 
 	al_destroy_bitmap(key_up);
 	al_destroy_bitmap(key_down);

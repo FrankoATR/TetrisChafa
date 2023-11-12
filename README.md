@@ -29,7 +29,7 @@ I want to share it with the game developer community.
 
 
 ## General Information
-- Last Update 11/2023 (v1.24)
+- Last Update 11/2023 (v1.25)
 - Development date: (10/2021 - 11/2021) - El Salvador.
 - This is a small project that I did in my free time while attending university.
 
@@ -41,10 +41,8 @@ I want to share it with the game developer community.
 
 
 ## Features 
-- 2 new songs during the game.
-- Fixed waiting time before figures freeze.
-- The volume level was changed.
-- 1 new figure.
+- A new level has been added: level 11
+- Optional full screen option is added for (1920x1080) and is required if the resolution is lower.
 
 
 ## Preview
