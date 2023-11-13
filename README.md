@@ -37,7 +37,8 @@ I want to share it with the game developer community.
 ## Technologies Used
 - Visual Studio 2022
 - C++
-- Allegro.5.2.7.1
+- Allegro 5.2.7.1
+- nlohmann-json 3.11.2
 
 
 ## Features 
