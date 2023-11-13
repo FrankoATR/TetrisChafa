@@ -46,9 +46,6 @@
     <Image Include="images\icon\icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="images\icon\icon.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="assets\img\icon\icon.ico">
       <Filter>Resource Files</Filter>
     </Image>

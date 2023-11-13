@@ -17,6 +17,19 @@
 #include <string>
 #include <Windows.h>
 #include <list>
+#include <fstream>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+#define WINVER 0x0600
+#define _WIN32_WINNT 0x0600
+
+#include <stdio.h>
+#include <shlobj.h>
+#include <objbase.h>
+
+#pragma comment(lib, "shell32.lib")
+#pragma comment(lib, "ole32.lib")
 
 using namespace std;
 
@@ -158,13 +171,36 @@ int main() {
 
 int menu_game() {
 
+	int MaxPoints = 0;
+	bool inControls = false;
+	int WaitToChangeScreen = 0;
+
+
+	PWSTR path = NULL;
+	HRESULT r;
+	json j;
+	r = SHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_CREATE, NULL, &path);
+	if (path != NULL)
+	{
+		wstring savedGamesPath(path);
+		CoTaskMemFree(path);
+		wstring jsonFilePath = savedGamesPath + L"\\My Games\\TetrisChafa\\data.json";
+		const wchar_t* jsonPath = jsonFilePath.c_str();
+		ifstream f(jsonPath);
+		if (f.is_open()) {
+			j = json::parse(f);
+			MaxPoints = j["MaxScore"];
+		}
+	}
+
+
+
+
 	al_play_sample_instance(menu_song_Instance);
 
 	al_set_timer_speed(fallingTimer, 0.2);
 
-	int MaxPoints = 0;
-	bool inControls = false;
-	int WaitToChangeScreen = 0;
+
 
 	Buttons playButton(450, 350, 200, 100, button_play_f, button_play_t);
 	Buttons controlsButton(410, 500, 280, 100, button_controls_f, button_controls_t);
@@ -239,12 +275,12 @@ int menu_game() {
 		al_identity_transform(&tr);
 		al_scale_transform(&tr, proportion_W * 0.4, proportion_H * 0.4);
 		al_use_transform(&tr);
-		drawText(32 * 1, 32 * 70, "v1.25");
+		drawText(32 * 1, 32 * 70, "v1.25.1");
 
 		al_identity_transform(&tr);
 		al_scale_transform(&tr, proportion_W*0.7, proportion_H*0.7);
 		al_use_transform(&tr);
-		drawText(32 * 18, 32 * 8, "Max score: " + to_string(MaxPoints));
+		drawText(32 * 17, 32 * 8, "Max score: " + to_string(MaxPoints));
 
 		al_identity_transform(&tr);
 		al_scale_transform(&tr, proportion_W, proportion_H);
@@ -309,7 +345,34 @@ int menu_game() {
 
 			al_set_timer_speed(fallingTimer, 0.2);
 
-			if (MaxPoints < tmpPoints) MaxPoints = tmpPoints;
+			if (MaxPoints < tmpPoints) { 
+				MaxPoints = tmpPoints;
+
+				r = SHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_CREATE, NULL, &path);
+				if (path != NULL)
+				{
+					wstring savedGamesPath(path);
+					CoTaskMemFree(path);
+					wstring jsonFilePath = savedGamesPath + L"\\My Games\\TetrisChafa\\data.json";
+					const wchar_t* jsonPath = jsonFilePath.c_str();
+					if (CreateDirectory(jsonFilePath.substr(0, jsonFilePath.find_last_of(L"\\")).c_str(), NULL) ||
+						ERROR_ALREADY_EXISTS == GetLastError()) {
+						ifstream f(jsonPath);
+						j["MaxScore"] = MaxPoints;
+						ofstream o(jsonPath);
+						o << setw(4) << j << endl;
+					}
+					else {
+						ifstream f(jsonPath);
+						j["MaxScore"] = MaxPoints;
+						ofstream o(jsonPath);
+						o << setw(4) << j << endl;
+					}
+				}
+
+
+
+			};
 		}
 
 		if (controlsButton.Pressed()) {
