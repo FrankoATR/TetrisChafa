@@ -192,9 +192,10 @@
     <ClInclude Include="Buttons.h" />
     <ClInclude Include="Collisions.h" />
     <ClInclude Include="FigureModels.h" />
+    <ClInclude Include="Probabilitys.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SpecialFuncs.h" />
-    <ClInclude Include="TetrisBlocks.h" />
+    <ClInclude Include="TetrisBlock.h" />
     <ClInclude Include="TetrisFigures.h" />
   </ItemGroup>
   <ItemGroup>

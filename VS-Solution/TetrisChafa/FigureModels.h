@@ -4,13 +4,15 @@ using namespace std;
 struct FigureModel {
 	const int id;
 	const int cantitie;
+	const double probability;
 	int model[4][5][5];
 
 };
 
 
 
-	FigureModel arrow = { 0, 4, {
+	FigureModel arrow = { 0, 4, 0.1,
+								{
 									{
 										{0,0,0,0,0},
 										{0,0,1,0,0},
@@ -42,7 +44,7 @@ struct FigureModel {
 								} 
 	};
 
-	FigureModel recipe = { 1, 4, 		
+	FigureModel recipe = { 1, 4, 0.05,
 								{
 									{
 										{0,0,0,0,0},
@@ -75,7 +77,8 @@ struct FigureModel {
 						}
 	};
 
-	FigureModel cube = { 2, 1, {
+	FigureModel cube = { 2, 1, 0.1,
+							{
 									{
 										{0,0,0,0,0},
 										{0,1,1,0,0},
@@ -86,7 +89,8 @@ struct FigureModel {
 							}
 	};
 
-	FigureModel scalRigth = { 3, 2, {
+	FigureModel scalRigth = { 3, 2, 0.12,
+									{
 										{
 											{0,0,0,0,0},
 											{0,0,1,0,0},
@@ -104,7 +108,8 @@ struct FigureModel {
 							}
 	};
 
-	FigureModel scalLeft = { 4, 2, {
+	FigureModel scalLeft = { 4, 2, 0.12,
+								{
 										{
 											{0,0,0,0,0},
 											{0,1,0,0,0},
@@ -122,7 +127,8 @@ struct FigureModel {
 							}
 	};
 
-	FigureModel line = { 5, 2, {
+	FigureModel line = { 5, 2, 0.12,
+							{
 									{
 										{0,0,0,0,0},
 										{0,0,1,0,0},
@@ -140,7 +146,8 @@ struct FigureModel {
 							}
 	};
 
-	FigureModel LRigth = { 6, 4, {
+	FigureModel LRigth = { 6, 4, 0.12,
+								{
 									{
 										{0,0,0,0,0},
 										{0,0,1,1,0},
@@ -172,7 +179,8 @@ struct FigureModel {
 							}
 	};	
 	
-	FigureModel LLeft = { 7, 4, {
+	FigureModel LLeft = { 7, 4, 0.12,
+								{
 									{
 										{0,0,0,0,0},
 										{0,1,1,0,0},
@@ -204,7 +212,8 @@ struct FigureModel {
 							}
 	};
 
-	FigureModel spiral = { 8, 4, {
+	FigureModel spiral = { 8, 4, 0.05,
+								{
 									{
 										{0,0,0,0,0},
 										{0,1,0,0,0},
@@ -238,7 +247,8 @@ struct FigureModel {
 	};	
 	
 	
-	FigureModel hiperLine = { 9, 2, {
+	FigureModel hiperLine = { 9, 2, 0.07,
+									{
 										{
 											{0,0,1,0,0},
 											{0,0,1,0,0},
@@ -256,7 +266,8 @@ struct FigureModel {
 								}
 	};
 
-	FigureModel soloCube = { 10, 4, {
+	FigureModel soloCube = { 10, 4, 0.03,
+								{
 									{
 										{0,0,0,0,0},
 										{0,0,0,1,0},

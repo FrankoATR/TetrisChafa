@@ -37,6 +37,7 @@ using namespace std;
 #include "Buttons.h"
 #include "TetrisFigures.h"
 #include "SpecialFuncs.h"
+#include "Probabilitys.h"
 #pragma endregion
 
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
@@ -93,6 +94,11 @@ ALLEGRO_BITMAP* button_toFull_t;
 ALLEGRO_BITMAP* button_toFull_f;
 ALLEGRO_BITMAP* button_toWindow_t;
 ALLEGRO_BITMAP* button_toWindow_f;
+ALLEGRO_BITMAP* Container_pause;
+ALLEGRO_BITMAP* button_p_exit_f;
+ALLEGRO_BITMAP* button_p_exit_t;
+ALLEGRO_BITMAP* button_p_continue_t;
+ALLEGRO_BITMAP* button_p_continue_f;
 ALLEGRO_BITMAP* key_up;
 ALLEGRO_BITMAP* key_down;
 ALLEGRO_BITMAP* key_left;
@@ -102,6 +108,9 @@ ALLEGRO_BITMAP* key_z;
 ALLEGRO_BITMAP* key_x;
 ALLEGRO_BITMAP* key_leftClick;
 ALLEGRO_BITMAP* key_esc;
+
+ALLEGRO_BITMAP* logo;
+
 
 ALLEGRO_BITMAP* colorBlocks[4];
 
@@ -117,12 +126,13 @@ float volumeIntermediate = 0.0;
 //WINDOW VARS
 int widthORG = 32 * 36;
 int heightORG = 32 * 29;
-int widtht_W = GetSystemMetrics(SM_CXSCREEN);
-int height_W = GetSystemMetrics(SM_CYSCREEN);
+int widtht_W;
+int height_W;
 bool isFullScreen;
 
-float proportion_W = float(widtht_W) / float(widthORG);
-float proportion_H = float(height_W) / float(heightORG);
+float proportion_W;
+float proportion_H;
+float relative_pos;
 
 //OTHER VARS
 int segundo = 1000;
@@ -133,6 +143,7 @@ int auxMinCount = 60;
 int velocityLevel = 1;
 bool alreadyHold = false;
 TetrisFigures* holdFigure = NULL;
+ProbabilisticGenerator* generator = NULL;
 
 #pragma endregion
 
@@ -141,7 +152,6 @@ TetrisFigures* holdFigure = NULL;
 int menu_game();
 int game_in();
 void menu_controls_in();
-void timerfunc();
 void initialize();
 void endProgram();
 
@@ -150,7 +160,7 @@ void displayInfoInGame(int);
 void displayGridAndCoordinates();
 void cleanAllInGame();
 void displayAllColliders();
-void drawText(int, int, string);
+void drawText(int, int, string, float = 1.0);
 void genereteFig();
 
 #pragma endregion
@@ -202,36 +212,44 @@ int menu_game() {
 
 
 
-	Buttons playButton(450, 350, 200, 100, button_play_f, button_play_t);
-	Buttons controlsButton(410, 500, 280, 100, button_controls_f, button_controls_t);
-	Buttons exitButton(450, 650, 200, 100, button_exit_f, button_exit_t);
-	Buttons toFullButton(32*34, 32*1, 50, 50, button_toFull_f, button_toFull_t);
-	Buttons toWindowButton(32 * 34, 32 * 1, 50, 50, button_toWindow_f, button_toWindow_t);
+	Buttons playButton(relative_pos + 450, 350, 200, 100, button_play_f, button_play_t);
+	Buttons controlsButton(relative_pos + 410, 500, 280, 100, button_controls_f, button_controls_t);
+	Buttons exitButton(relative_pos + 450, 650, 200, 100, button_exit_f, button_exit_t);
+	Buttons toFullButton(relative_pos + 32 * 34, 32 * 1 - 16, 50, 50, button_toFull_f, button_toFull_t);
+	Buttons toWindowButton(relative_pos + 32 * 34, 32 * 1 - 16, 50, 50, button_toWindow_f, button_toWindow_t);
+
+
+
 
 	while (true) {
 
-		al_clear_to_color(al_map_rgb(255, 255, 255));
+		al_clear_to_color(al_map_rgb(0, 0, 0));
 
 		al_wait_for_event(event_queue, &Evento);
 
-		al_draw_bitmap(menu_sprite, 0, 0, NULL);
+		al_identity_transform(&tr);
+		al_scale_transform(&tr, proportion_W, proportion_H);
+		al_use_transform(&tr);
+
+
+		al_draw_bitmap(menu_sprite, relative_pos, 0, NULL);
+
+		al_draw_line(0, 500, relative_pos, 500, colorblanco, 1.0);
+		al_draw_line(relative_pos + widthORG, 500, widtht_W, 500, colorblanco, 1.0);
 		
 		//Animation Menu
-
-		for (auto it = figures.begin(); it != figures.end(); it++)
-			(*it)->Display();
+		for (auto f : figures)
+			f->Display();
 
 		if (Evento.type == ALLEGRO_EVENT_TIMER) {
 			if (Evento.timer.source == secsTimer) {
 				int xPosAux = (rand() % 32) * 32;
 
-				figures.push_back(new TetrisFigures(xPosAux, 32 * -5, rand() % cantFig, rand() % 5, colorBlocks[rand() % 4], block_ghost));
-
-
+				//oldGenerator -> rand() % cantFig
+				figures.push_back(new TetrisFigures(relative_pos + xPosAux, 32 * -5, rand() % cantFig, rand() % 5, colorBlocks[rand() % 4], block_ghost));
 
 			}
 			if (Evento.timer.source == FPS) {
-
 
 				for (auto it = figures.begin(); it != figures.end();) {
 					if ((*it)->y <= 32 * 35) {
@@ -239,7 +257,7 @@ int menu_game() {
 						it++;
 					}
 					else {
-						(*it)->DestroyTetrisFigures();
+						delete* it;
 						it = figures.erase(it);
 					}
 				}
@@ -256,7 +274,7 @@ int menu_game() {
 						it++;
 					}
 					else {
-						(*it)->DestroyTetrisFigures();
+						delete* it;
 						it = figures.erase(it);
 					}
 				}
@@ -265,39 +283,27 @@ int menu_game() {
 		}
 
 
+		drawText(32 * 5, 32 * 1, "TetrisChafa", 1.5);
+		drawText(32 * 1, 32 * 70, "v1.26", 0.4);
+		drawText(32 * 17, 32 * 8, "High score: " + to_string(MaxPoints), 0.7);
 
-		al_identity_transform(&tr);
-		al_scale_transform(&tr, proportion_W* 1.5, proportion_H* 1.5);
-		al_use_transform(&tr);
-		drawText(32 * 5, 32 * 1, "TetrisChafa");
+		al_draw_bitmap(logo, 32 * 32 , 32 * 26 - 16, NULL);
 
-
-		al_identity_transform(&tr);
-		al_scale_transform(&tr, proportion_W * 0.4, proportion_H * 0.4);
-		al_use_transform(&tr);
-		drawText(32 * 1, 32 * 70, "v1.25.1");
-
-		al_identity_transform(&tr);
-		al_scale_transform(&tr, proportion_W*0.7, proportion_H*0.7);
-		al_use_transform(&tr);
-		drawText(32 * 17, 32 * 8, "Max score: " + to_string(MaxPoints));
-
-		al_identity_transform(&tr);
-		al_scale_transform(&tr, proportion_W, proportion_H);
-		al_use_transform(&tr);
 
 		playButton.Display(event_queue, Evento, proportion_W, proportion_H);
 		controlsButton.Display(event_queue, Evento, proportion_W, proportion_H);
 		exitButton.Display(event_queue, Evento, proportion_W, proportion_H);
 
 
-		if (widtht_W == 1920 && height_W == 1080) {
+		if (widtht_W >= 1920 && height_W >= 1080) {
 			if (isFullScreen) {
 				toWindowButton.Display(event_queue, Evento, proportion_W, proportion_H);
 				if (toWindowButton.Pressed() && WaitToChangeScreen <= 1) {
 					isFullScreen = !isFullScreen;
 					proportion_W = 1.0;
 					proportion_H = 1.0;
+					relative_pos = 0;
+
 					al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, false);
 					al_set_display_flag(window, ALLEGRO_WINDOWED, true);
 					al_resize_display(window, widthORG, heightORG);
@@ -312,6 +318,8 @@ int menu_game() {
 					isFullScreen = !isFullScreen;
 					proportion_W = float(widtht_W) / float(widthORG);
 					proportion_H = float(height_W) / float(heightORG);
+					relative_pos = 0;
+
 					al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, true);
 					al_set_display_flag(window, ALLEGRO_WINDOWED, false);
 					al_resize_display(window, widtht_W, height_W);
@@ -330,13 +338,13 @@ int menu_game() {
 		if (playButton.Pressed()) {
 
 			for (auto it = figures.begin(); it != figures.end();) {
-				(*it)->DestroyTetrisFigures();
+				delete* it;
 				it = figures.erase(it);
 			}
 
 			al_stop_sample_instance(menu_song_Instance);
 
-			
+
 			int tmpPoints = game_in();
 
 			al_stop_sample_instance(songsList[idMusic].song);
@@ -345,7 +353,7 @@ int menu_game() {
 
 			al_set_timer_speed(fallingTimer, 0.2);
 
-			if (MaxPoints < tmpPoints) { 
+			if (MaxPoints < tmpPoints) {
 				MaxPoints = tmpPoints;
 
 				r = SHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_CREATE, NULL, &path);
@@ -399,12 +407,10 @@ void menu_controls_in() {
 
 		al_wait_for_event(event_queue, &Evento);
 
-		al_clear_to_color(al_map_rgb(255, 255, 255));
+		al_clear_to_color(al_map_rgb(0, 0, 0));
 
-		al_identity_transform(&tr);
-		al_scale_transform(&tr, proportion_W, proportion_H);
-		al_use_transform(&tr);
-		al_draw_bitmap(menu_sprite, 0, 0, 0);
+
+		al_draw_bitmap(menu_sprite, relative_pos, 0, 0);
 
 		if (Evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
 			break;
@@ -415,41 +421,35 @@ void menu_controls_in() {
 				break;
 			}
 
-		al_identity_transform(&tr);
-		al_scale_transform(&tr, proportion_W*2, proportion_H*2);
-		al_use_transform(&tr);
-		drawText(32 * 4, 32 * 0 + 16, "Controls");
 
-		al_identity_transform(&tr);
-		al_scale_transform(&tr, proportion_W, proportion_H);
-		al_use_transform(&tr);
+		drawText(32 * 4, 32 * 0 + 16, "Controls", 2.0);
 
-		al_draw_bitmap(key_right, 32 * 2, 32 * 5, NULL);
+		al_draw_bitmap(key_right, relative_pos + 32 * 2, 32 * 5, NULL);
 		drawText(32 * 5, 32 * 5, "Move piece to rigth");
 
-		al_draw_bitmap(key_left, 32 * 2, 32 * 7, NULL);
+		al_draw_bitmap(key_left, relative_pos + 32 * 2, 32 * 7, NULL);
 		drawText(32 * 5, 32 * 7, "Move piece to left");
 
-		al_draw_bitmap(key_down, 32 * 2, 32 * 9, NULL);
+		al_draw_bitmap(key_down, relative_pos + 32 * 2, 32 * 9, NULL);
 		drawText(32 * 5, 32 * 9, "Fast fall");
 
-		al_draw_bitmap(key_up, 32 * 2, 32 * 11, NULL);
+		al_draw_bitmap(key_up, relative_pos + 32 * 2, 32 * 11, NULL);
 		drawText(32 * 5, 32 * 11, "Hold current piece");
 
-		al_draw_bitmap(key_z, 32 * 2, 32 * 13, NULL);
+		al_draw_bitmap(key_z, relative_pos + 32 * 2, 32 * 13, NULL);
 		drawText(32 * 5, 32 * 13, "Counterclockwise rotation");
 
-		al_draw_bitmap(key_x, 32 * 2, 32 * 15, NULL);
+		al_draw_bitmap(key_x, relative_pos + 32 * 2, 32 * 15, NULL);
 		drawText(32 * 5, 32 * 15, "Clockwise rotation");
 
-		al_draw_bitmap(key_space, 32 * 2, 32 * 17, NULL);
+		al_draw_bitmap(key_space, relative_pos + 32 * 2, 32 * 17, NULL);
 		drawText(32 * 9, 32 * 17, "Instant fall");
 
-		al_draw_bitmap(key_leftClick, 32 * 2, 32 * 19, NULL);
+		al_draw_bitmap(key_leftClick, relative_pos + 32 * 2, 32 * 19, NULL);
 		drawText(32 * 5, 32 * 19, "Take a block");
 
 
-		al_draw_bitmap(key_esc, 32 * 2, 32 * 23, NULL);
+		al_draw_bitmap(key_esc, relative_pos + 32 * 2, 32 * 23, NULL);
 		drawText(32 * 5, 32 * 23, "Exit");
 
 
@@ -460,6 +460,7 @@ void menu_controls_in() {
 
 int game_in() {
 
+	bool activePause = false;
 	int BONUSPOINTS = 0;
 	bool CollidersTetrisON = false;
 	bool CollidersBackgroundON = false;
@@ -479,30 +480,18 @@ int game_in() {
 
 
 	//Initialize Objects in game
-	for (int i = 0; i < 29; i++) {
-		CollisionBlocks.push_back(new Collider(32*2, 32*i, 31, 31, 0, true));
-		CollisionBlocks.push_back(new Collider(32*1, 32*i, 31, 31, 0, true));
-		CollisionBlocks.push_back(new Collider(32*0, 32*i, 31, 31, 0, true));
+
+	Buttons exitButton((widthORG / 2 - 400 / 2) + 75, (heightORG / 2 - 400 / 2) + 150, 100, 100, button_p_exit_f, button_p_exit_t);
+	Buttons continueButton((widthORG / 2 - 400 / 2) + 225, (heightORG / 2 - 400 / 2) + 200, 100, 100, button_p_continue_f, button_p_continue_t);
+
+	CollisionBlocks.push_back(new Collider(relative_pos + 32 * 0, 0, 32 * 3, 32 * 29, 0, true));
+	CollisionBlocks.push_back(new Collider(relative_pos + 32 * 13, 0, 32 * 3, 32 * 29, 0, true));
+	CollisionBlocks.push_back(new Collider(relative_pos + 32 * 3, 32 * 26, 32 * 10, 32 * 3, 0, true));
 
 
-		CollisionBlocks.push_back(new Collider(32*13, 32*i, 31, 31, 0, true));
-		CollisionBlocks.push_back(new Collider(32*14, 32*i, 31, 31, 0, true));
-		CollisionBlocks.push_back(new Collider(32*15, 32*i, 31, 31, 0, true));
-	}
-	for (int i = 3; i < 13; i++) {
-		CollisionBlocks.push_back(new Collider(32 * i, 32 * 26, 31, 31, 0, true));
-		CollisionBlocks.push_back(new Collider(32 * i, 32 * 27, 31, 31, 0, true));
-		CollisionBlocks.push_back(new Collider(32 * i, 32 * 28, 31, 31, 0, true));
 
-	}
-
-	for (int i = 0; i < 3; i++) {
-
-		queue_figures.push_front(new TetrisFigures(32 * 18, 32 * 12 + (i * 6 * 32), rand() % cantFig, rand() % 5, colorBlocks[rand() % 4], block_ghost));
-
-	}
-
-
+	for (int i = 0; i < 3; i++)
+		queue_figures.push_front(new TetrisFigures(32 * 18, 32 * 12 + (i * 6 * 32), generator->generate(), rand() % 5, colorBlocks[rand() % 4], block_ghost));
 
 
 	while (true) {
@@ -511,17 +500,8 @@ int game_in() {
 
 		++countFPS %= 60;
 
-		if (Evento.type == ALLEGRO_EVENT_TIMER) {
+		if (Evento.type == ALLEGRO_EVENT_TIMER and !activePause) {
 			if (Evento.timer.source == secsTimer) {
-				segundo--;
-				
-				//cout << "Bloques Unicos: " << Unique_blocks.size() << endl;
-				//cout << "Figuras: " << figures.size() << endl;
-				//cout << "Total Colliders: " << CollisionBlocks.size() << endl;
-				//timerfunc();
-
-				//cout << "Duration: " << MusicDuration << endl;
-				//cout << "MusicId " << idMusic << endl;
 
 				if (auxMinCount < 1) {
 					velocityLevel++;
@@ -584,9 +564,9 @@ int game_in() {
 		}
 
 		if (Evento.type == ALLEGRO_EVENT_KEY_DOWN) {
-			if (Evento.keyboard.keycode == ALLEGRO_KEY_UP and !alreadyHold ) {
+			if (Evento.keyboard.keycode == ALLEGRO_KEY_UP and !alreadyHold and !activePause) {
 				auto actual = figures.begin();
-				if (!figures.empty() and (*actual)->blocks.size() != 0 ) {
+				if (!figures.empty() and (*actual)->blocks.size() != 0) {
 					if (!holdFigure) {
 						figures.erase(actual);
 						holdFigure = (*actual);
@@ -595,12 +575,12 @@ int game_in() {
 						auto aux = holdFigure;
 						figures.erase(actual);
 						holdFigure = (*actual);
-						aux->funcMovTo(6 * 32, 1 * 32);
+						aux->funcMovTo(relative_pos + 6 * 32, 1 * 32);
 						aux->StaticTime = 0;
 						aux->auxStatic = false;
 						figures.push_back(aux);
 					}
-					holdFigure->funcMovTo(32 * 28, 32 * 10);
+					holdFigure->funcMovTo(relative_pos + 32 * 28, 32 * 10);
 					alreadyHold = true;
 				}
 			}
@@ -608,48 +588,53 @@ int game_in() {
 
 		al_clear_to_color(al_map_rgb(64, 4, 38));
 
-		al_identity_transform(&tr);
-		al_scale_transform(&tr, proportion_W, proportion_H);
-		al_use_transform(&tr);
 
-		al_draw_bitmap(bg_sprite, 32*2, 32*2, 0);
+		al_draw_bitmap(bg_sprite, relative_pos + 32 * 2, 32 * 2, 0);
 
 		auxTaked = false;
 		for (list<TetrisBlocks*>::iterator it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
 			(*it)->Display();
 
-			Takeaobj(*it, event_queue, Evento, &BONUSPOINTS, blockTaked, proportion_W, proportion_H);
+			if (!activePause )
+				Takeaobj(*it, event_queue, Evento, &BONUSPOINTS, blockTaked, proportion_W, proportion_H);
 			if ((*it)->taked) {
 				blockTaked = true;
 				auxTaked = true;
 			}
-		}	
+
+
+		}
+		
 
 		if (!auxTaked) {
-			BONUSPOINTS += checkEachFile();
 			blockTaked = false;
 		}
 
-		 
+
+
 		if (!figures.empty()) {
 			for (list<TetrisFigures*>::iterator it = figures.begin(); it != figures.end();) {
 				if (!(*it)->Empty()) {
-					(*it)->update(event_queue, Evento, fallingTimer, secsTimer);
+					if(!activePause) (*it)->update(event_queue, Evento, fallingTimer, secsTimer);
 					(*it)->Display();
 					it++;
 				}
 				else {
-					(*it)->DestroyTetrisFigures();
+					delete* it;
 					it = figures.erase(it);
 				}
 			}
 		}
 		else {
-			BONUSPOINTS += checkEachFile();
 			genereteFig();
 			alreadyHold = false;
 		}
+
 		
+
+
+
+		BONUSPOINTS += checkEachFile(block_white1, block_white2);
 
 		for (auto it = queue_figures.begin(); it != queue_figures.end(); it++)
 			(*it)->Display();
@@ -672,13 +657,30 @@ int game_in() {
 					collider->DestroyCollider();
 					});
 				*/
+				activePause = !activePause;
+
+			}
+		}
+
+
+
+		displayInfoInGame(BONUSPOINTS);
+
+
+		if (activePause) {
+			al_draw_bitmap(Container_pause, (widthORG / 2 - 400 / 2), (heightORG / 2 - 400 / 2), NULL);
+			exitButton.Display(event_queue, Evento, proportion_W, proportion_H);
+			continueButton.Display(event_queue, Evento, proportion_W, proportion_H);
+			if (exitButton.Pressed()) {
 				cleanAllInGame();
 				ButtonPressed = true;
 				return BONUSPOINTS;
 			}
-		}
+			else if (continueButton.Pressed()) {
+				activePause = !activePause;
 
-		displayInfoInGame(BONUSPOINTS);
+			}
+		}
 
 		//displayGridAndCoordinates();
 		//displayAllColliders();
@@ -689,27 +691,23 @@ int game_in() {
 }
 
 void cleanAllInGame() {
-	for (list<TetrisFigures*>::iterator it = figures.begin(); it != figures.end();) {
-		(*it)->DestroyTetrisFigures();
-		it = figures.erase(it);
-	}
 
-	for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end();) {
-		(*it2)->DestroyTetrisBlocks();
-		it2 = Unique_blocks.erase(it2);
-	}
-	for (list<Collider*>::iterator it = CollisionBlocks.begin(); it != CollisionBlocks.end();) {
-		(*it)->DestroyCollider();
-		it = CollisionBlocks.erase(it);
-	}
+	for (auto f : figures)
+		delete f;
+	for (auto b : Unique_blocks)
+		delete b;
+	for (auto b : CollisionBlocks)
+		delete b;
+	for (auto b : queue_figures)
+		delete b;
 
-	for (auto it = queue_figures.begin(); it != queue_figures.end();) {
-		(*it)->DestroyTetrisFigures();
-		it = queue_figures.erase(it);
-	}
+	figures.clear();
+	Unique_blocks.clear();
+	CollisionBlocks.clear();
+	queue_figures.clear();
 
 	if (holdFigure) {
-		holdFigure->DestroyTetrisFigures();
+		delete holdFigure;
 		holdFigure = NULL;
 	}
 }
@@ -718,26 +716,17 @@ void cleanAllInGame() {
 
 void displayInfoInGame(int BonusPoints) {
 
-
-
-	al_identity_transform(&tr);
-	al_scale_transform(&tr, proportion_W*0.7, proportion_H*0.7);
-	al_use_transform(&tr);
-
-	drawText(32 * 21, 32 * 2, "Move 1 block for 1000");
-	drawText(32 * 21, 32 * 4, "Score: " + to_string(BonusPoints));
-	drawText(32 * 21, 32 * 6, "Level: " + to_string(velocityLevel));
+	drawText(32 * 21, 32 * 2, "Move 1 block for 1000", 0.7);
+	drawText(32 * 21, 32 * 4, "Score: " + to_string(BonusPoints), 0.7);
+	drawText(32 * 21, 32 * 6, "Level: " + to_string(velocityLevel), 0.7);
 	if (velocityLevel <= 10)
-		drawText(32 * 21, 32 * 8, "Next level in: " + to_string(auxMinCount));
+		drawText(32 * 21, 32 * 8, "Next level in: " + to_string(auxMinCount), 0.7);
 	else
-		drawText(32 * 21, 32 * 8, "Final level");
-	drawText(32 * 21, 32 * 10, "Next figures ");
-	al_draw_line(32 * 37, 32 * 11, 32 * 37, 32 * 37, al_map_rgb(255, 255, 255), 1.0f);
-	drawText(32 * 41, 32 * 10, "Hold ");
+		drawText(32 * 21, 32 * 8, "Final level", 0.7);
+	drawText(32 * 21, 32 * 10, "Next figures ", 0.7);
+	al_draw_line((relative_pos + 32 * 37) * proportion_W, 32 * 11, (relative_pos + 32 * 37) * proportion_W, 32 * 37, al_map_rgb(255, 255, 255), 1.0f);
+	drawText(32 * 41, 32 * 10, "Hold ", 0.7);
 
-	al_identity_transform(&tr);
-	al_scale_transform(&tr, proportion_W, proportion_H);
-	al_use_transform(&tr);
 }
 
 void displayGridAndCoordinates() {
@@ -749,25 +738,19 @@ void displayGridAndCoordinates() {
 		al_draw_line(0, j * block_pixels, widthORG, j * block_pixels, al_map_rgb(255, 255, 255), 1.0f);
 
 
-	al_identity_transform(&tr);
-	al_scale_transform(&tr, proportion_W * 0.2, proportion_H * 0.2);
-	al_use_transform(&tr);
 
 	for (int i = 0; i <= widthORG / block_pixels; i++) {
 		for (int j = 0; j <= heightORG / block_pixels; j++) {
-			drawText(i * block_pixels * 5, (j * block_pixels * 5) + 20, to_string(i * block_pixels));
-			drawText(i * block_pixels * 5, (j * block_pixels * 5) + 80, to_string(j * block_pixels));
+			drawText(i * block_pixels * 5, (j * block_pixels * 5) + 20, to_string(i * block_pixels), 0.2);
+			drawText(i * block_pixels * 5, (j * block_pixels * 5) + 80, to_string(j * block_pixels), 0.2);
 		}
 	}
 
-	al_identity_transform(&tr);
-	al_scale_transform(&tr, proportion_W, proportion_H);
-	al_use_transform(&tr);
 }
 
 
 void displayAllColliders() {
-	
+
 	// ******************** MOSTRAR COLLIDERS ********************
 
 	for (list<TetrisFigures*>::iterator it = figures.begin(); it != figures.end(); it++) {
@@ -791,11 +774,22 @@ void displayAllColliders() {
 	}
 
 	// ******************** ********************* ********************
-	
+
 }
 
-void drawText(int x, int y, string text) {
-	al_draw_text(globalFont, colorblanco, x, y, NULL, text.c_str() );
+void drawText(int x, int y, string text, float scale) {
+
+	ALLEGRO_TRANSFORM originalTransform;
+	al_copy_transform(&originalTransform, al_get_current_transform());
+
+	al_identity_transform(&tr);
+	al_scale_transform(&tr, proportion_W * scale, proportion_H * scale);
+	al_use_transform(&tr);
+
+	al_draw_text(globalFont, colorblanco, relative_pos + x, y, NULL, text.c_str());
+
+	al_use_transform(&originalTransform);
+
 }
 
 
@@ -804,7 +798,7 @@ void genereteFig() {
 
 	auto it = queue_figures.begin();
 
-	(*it)->funcMovTo(6 * 32, 1 * 32);
+	(*it)->funcMovTo(relative_pos + 6 * 32, 1 * 32);
 
 
 	figures.push_back(*it);
@@ -813,11 +807,11 @@ void genereteFig() {
 	int posYAux = 32 * 9;
 
 	for (auto it = queue_figures.begin(); it != queue_figures.end(); it++) {
-		(*it)->funcMovTo(32 * 18, posYAux);
+		(*it)->funcMovTo(relative_pos + 32 * 18, posYAux);
 		posYAux += 32 * 6;
 	}
 
-	queue_figures.push_back(new TetrisFigures(32 * 18, 32 * 22, rand() % cantFig, rand() % 5, colorBlocks[rand() % 4], block_ghost));
+	queue_figures.push_back(new TetrisFigures(relative_pos + 32 * 18, 32 * 22, generator->generate(), rand() % 5, colorBlocks[rand() % 4], block_ghost));
 
 }
 
@@ -834,7 +828,7 @@ void initialize() {
 	al_install_keyboard();
 	al_init_image_addon();
 
-	al_reserve_samples(2);
+	al_reserve_samples(4);
 
 	menu_song = al_load_sample("assets/music/neon-gaming.mp3");
 	game_song0 = al_load_sample("assets/music/kim-lightyear-legends.mp3");
@@ -848,8 +842,14 @@ void initialize() {
 
 	al_set_window_title(window, "TetrisChafa");
 
+	widtht_W = GetSystemMetrics(SM_CXSCREEN);
+	height_W = GetSystemMetrics(SM_CYSCREEN);
 
-	if (widtht_W == 1920 && height_W == 1080) {
+
+	relative_pos = 0;
+
+
+	if (widtht_W >= 1920 && height_W >= 1080) {
 
 		window = al_create_display(widthORG, heightORG);
 		isFullScreen = false;
@@ -863,25 +863,28 @@ void initialize() {
 	}
 	else {
 
-			window = al_create_display(widtht_W, height_W);
-			isFullScreen = true;
-			proportion_W = float(widtht_W) / float(widthORG);
-			proportion_H = float(height_W) / float(heightORG);
-			al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, true);
-			al_set_display_flag(window, ALLEGRO_WINDOWED, false);
+		window = al_create_display(widtht_W, height_W);
+		isFullScreen = true;
+		proportion_W = float(widtht_W) / float(widthORG);
+		proportion_H = float(height_W) / float(heightORG);
+		al_set_display_flag(window, ALLEGRO_FULLSCREEN_WINDOW, true);
+		al_set_display_flag(window, ALLEGRO_WINDOWED, false);
 	}
 
 
 	//al_set_window_position(window, widtht_W / 2 - widthORG / 2, (height_W / 2 - heighORG / 2));
 
 
-	/*
-		ALLEGRO_MONITOR_INFO info;
-		int i = 0;
-		do {
-			al_get_monitor_info(i++, &info);
-		} while (!(info.x1 == 0 && info.y1 == 0));
-	*/
+
+	ALLEGRO_MONITOR_INFO info;
+	int i = 0;
+	do {
+		al_get_monitor_info(i++, &info);
+	} while (!(info.x1 == 0 && info.y1 == 0));
+
+
+	//cout << "X: " << info.x1 << " " << info.x2 << endl;
+	//cout << "Y: " << info.y1 << " " << info.y2 << endl;
 
 	secsTimer = al_create_timer(1.0);
 	fallingTimer = al_create_timer(1.0);
@@ -957,6 +960,12 @@ void initialize() {
 	button_toWindow_t = al_load_bitmap("assets/img/buttons/toWindow_t.png");
 	button_toWindow_f = al_load_bitmap("assets/img/buttons/toWindow_f.png");
 
+	Container_pause = al_load_bitmap("assets/img/buttons/pause.png");;
+	button_p_exit_f = al_load_bitmap("assets/img/buttons/p_exit_f.png");;
+	button_p_exit_t = al_load_bitmap("assets/img/buttons/p_exit_t.png");;
+	button_p_continue_t = al_load_bitmap("assets/img/buttons/p_continue_t.png");;
+	button_p_continue_f = al_load_bitmap("assets/img/buttons/p_continue_f.png");;
+
 	key_up = al_load_bitmap("assets/img/controls/up.png");
 	key_down = al_load_bitmap("assets/img/controls/down.png");
 	key_left = al_load_bitmap("assets/img/controls/left.png");
@@ -967,7 +976,18 @@ void initialize() {
 	key_leftClick = al_load_bitmap("assets/img/controls/click_left.png");
 	key_esc = al_load_bitmap("assets/img/controls/esc.png");
 
+	logo = al_load_bitmap("assets/img/logo/WandGames.png");
+
 	al_set_display_icon(window, iconGame);
+
+
+	list<double> figureProbabilityList;
+
+	for (int i = 0; i < cantFig; i++)
+		figureProbabilityList.push_back(figureModels[i].probability);
+
+	generator = new ProbabilisticGenerator(figureProbabilityList);
+
 }
 
 void endProgram() {
@@ -1014,6 +1034,12 @@ void endProgram() {
 	al_destroy_bitmap(button_toWindow_t);
 	al_destroy_bitmap(button_toWindow_f);
 
+	al_destroy_bitmap(Container_pause);
+	al_destroy_bitmap(button_p_exit_f);
+	al_destroy_bitmap(button_p_exit_t);
+	al_destroy_bitmap(button_p_continue_t);
+	al_destroy_bitmap(button_p_continue_f);
+
 	al_destroy_bitmap(key_up);
 	al_destroy_bitmap(key_down);
 	al_destroy_bitmap(key_left);
@@ -1024,11 +1050,8 @@ void endProgram() {
 	al_destroy_bitmap(key_leftClick);
 	al_destroy_bitmap(key_esc);
 
+	al_destroy_bitmap(logo);
+
 
 	al_destroy_display(window);
-}
-
-
-void timerfunc() {
-	cout << "Minutos: " << segundo / 60 << ", " << "segundos: " << segundo % 60 << endl;
 }

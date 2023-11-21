@@ -23,7 +23,7 @@
     <ClInclude Include="Buttons.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TetrisBlocks.h">
+    <ClInclude Include="TetrisBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TetrisFigures.h">
@@ -41,11 +41,11 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Probabilitys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="images\icon\icon.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="assets\img\icon\icon.ico">
       <Filter>Resource Files</Filter>
     </Image>

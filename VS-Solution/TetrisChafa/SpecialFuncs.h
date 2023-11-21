@@ -1,100 +1,73 @@
-#include <time.h>
-
 list<TetrisFigures*> queue_figures;
-
-
-struct Matrix_Dimensions {
-	int files;
-	int columns;
-};
-
-/*Matrix_Dimensions Get_MatrixDims(int M[][]) {
-	int files = (sizeof(M) / sizeof(M[0]));
-	int columns = (sizeof(M[0]) / sizeof(M[0][0]));
-}
-*/
 
 float RandomFunc(int limit_A, int limit_B) {
 	return (limit_A + rand() % limit_B);
 }
 
 
-int checkEachFile() {
-	Collider tmpcheck(96+32/2, 192+32/2, 1, 1, 0, false);
-	int fileCanDestroy = 0;
-	int BONUS = 0;
+int checkEachFile(ALLEGRO_BITMAP* sprite1, ALLEGRO_BITMAP* sprite2) {
+	int countBlockFile = 0;
+	int countFiles = 0;
+	float combo = 1;
 
-	int FILESDESTROYED = 0;
-	float EXTRABONUS = 1;
-
-	for (int i = 0; i < 20; i++) {
-		for (int j = 0; j < 10; j++) {
-			for (list<TetrisBlocks*>::iterator it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
-				if (tmpcheck.Collision((*it)->ThisCollider) && !(*it)->taked) {
-					fileCanDestroy++;
-				}
-			}
-			tmpcheck.posX += 32;
-		}
-		if (fileCanDestroy == 10) {
-			FILESDESTROYED++;
-			tmpcheck.posX = 96 + 32 / 2;
-			for (int j = 0; j < 10; j++) {
-
-				for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end();) {
-					if (tmpcheck.Collision((*it2)->ThisCollider)) {
-						(*it2)->DestroyTetrisBlocks();
-						it2 = Unique_blocks.erase(it2);
-					}
-					else
-						it2++;
-				}
-				tmpcheck.posX += 32;
-			}
-			for (list<TetrisBlocks*>::iterator it3 = Unique_blocks.begin(); it3 != Unique_blocks.end(); it3++) {
-				if ((*it3)->y <= tmpcheck.posY) {
-					(*it3)->mov();
-				}
-			}
-		}
-		fileCanDestroy = 0;
-		tmpcheck.posX = 96 + 32 / 2;
-		tmpcheck.posY += 32;
-
-	}
-	for (int i = 0; i < FILESDESTROYED-1 ; i++)
-		EXTRABONUS += 0.5;
-
-	BONUS = FILESDESTROYED * 200 * EXTRABONUS ;
-	return BONUS;
-}
-
-
-void newCheckEachFile() {
-	int contAux = 0;
 	list<TetrisBlocks*> lineBlocks_list;
 
-	for (int i = 1; i < 10; i++) {
+	for (int i = 0 + 6; i < 20 + 6; i++) {
 		for (auto it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
-			if ((*it)->y == i*66) {
-				contAux++;
-				lineBlocks_list.push_back(*it);
+			auto block = *it;
+
+			if (block->y == i * 32 and !block->taked) {
+				countBlockFile++;
+				lineBlocks_list.push_back(block);
 			}
-			if (contAux == 10) {
+
+		}
+		if (countBlockFile == 10) {
+			bool MoveAbove = false;
+			for (auto it = lineBlocks_list.begin(); it != lineBlocks_list.end(); it++) {
+				auto blockToDelete = *it;
+
+				blockToDelete->die = true;
+				blockToDelete->deleting(sprite1, sprite2);
+				if (blockToDelete->dieTime == 0) {
+					Unique_blocks.remove(blockToDelete);
+					delete blockToDelete;
+					MoveAbove = true;
+
+				}
+
 
 			}
+			if (MoveAbove) {
+				for (auto blockToMove : Unique_blocks) {
+					if (blockToMove->y < i * 32)
+						blockToMove->mov();
+				}
+				countFiles++;
+
+			}
+
 		}
-		contAux = 0;
+
+		countBlockFile = 0;
 		lineBlocks_list.clear();
 	}
 
+
+	for (int i = 0; i < countFiles-1; i++)
+		combo += 0.5;
+
+	return countFiles * 200 * combo;
 }
+
+
+
 
 void Takeaobj(TetrisBlocks* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Evento, int *B, bool globalTaked, float proportion_W, float proportion_H){
 	int Mx = Evento.mouse.x / proportion_W;
 	int My = Evento.mouse.y / proportion_H;
 
-	if (obj->taked == false and !globalTaked && *B >= 1000) {
+	if (obj->taked == false and !obj->die and !globalTaked && *B >= 1000) {
 		if (Evento.type == ALLEGRO_EVENT_MOUSE_AXES || Evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
 			if (Mx >= obj->x && Mx <= obj->x + obj->sprite_w && My >= obj->y && My <= obj->y + obj->sprite_h) {
 				if (Evento.mouse.button & 1) {
@@ -118,19 +91,16 @@ void Takeaobj(TetrisBlocks* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT
 				obj->ThisCollider->posY = My - My % 32;
 
 				if (Evento.mouse.button & 1) {
-					for (list<TetrisFigures*>::iterator it = figures.begin(); it != figures.end(); it++) {
-						for (list<TetrisBlocks*>::iterator it2 = (*it)->blocks.begin(); it2 != (*it)->blocks.end(); it2++) {
-							if (obj->ThisCollider->Collision((*it2)->ThisCollider)) {
+					for (auto fig : figures)
+						for (auto block : fig->blocks)
+							if (obj->ThisCollider->Collision(block->ThisCollider))
 								isColling = true;
-							}
-						}
-					}
-					for (auto it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
-						if (obj->ThisCollider->Collision((*it)->ThisCollider) and (*it) != obj) {
-							isColling = true;
-						}
 
-					}
+					for (auto block : Unique_blocks)
+						if (obj->ThisCollider->Collision(block->ThisCollider) and block != obj)
+							isColling = true;
+
+
 					if (!isColling)
 						obj->taked = false;
 				}
@@ -140,11 +110,8 @@ void Takeaobj(TetrisBlocks* obj, ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT
 }
 
 bool checkGameOver() {
-	for (list<TetrisBlocks*>::iterator it = Unique_blocks.begin(); it != Unique_blocks.end(); it++) {
-		if ((*it)->ThisCollider->posY < 32 * 6) {
+	for (auto block : Unique_blocks)
+		if (block->y < 32 * 6)
 			return true;
-		}
-
-	}
 	return false;
 }

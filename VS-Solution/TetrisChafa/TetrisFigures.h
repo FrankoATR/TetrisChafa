@@ -1,4 +1,4 @@
-#include "TetrisBlocks.h"
+#include "TetrisBlock.h"
 #include "FigureModels.h"
 
 struct STATEFig {
@@ -30,7 +30,8 @@ public:
 
 	//funciones
 	TetrisFigures(int, int, int, int, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*); //Constructor
-	void virtual DestroyTetrisFigures();
+	~TetrisFigures();
+
 	bool Empty();
 
 	void Display();
@@ -52,7 +53,8 @@ public:
 
 
 private:
-	void forAllBlocksInFigure();
+	template <class T>
+	void forAllBlocksInFigure(void (*)());
 
 };
 
@@ -72,13 +74,11 @@ TetrisFigures::TetrisFigures(int x_, int y_, int id, int rotation, ALLEGRO_BITMA
 
 void TetrisFigures::Display() {
 	if (blocks.empty() == false) {
-		for (auto it = ghostBlocks.begin(); it != ghostBlocks.end(); it++)
-			(*it)->Display();
+		for (auto b : ghostBlocks)
+			b->Display();
+		for (auto b : blocks)
+			b->Display();
 
-		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
-			(*it)->Display();
-			it++;
-		}
 	}
 }
 
@@ -105,22 +105,23 @@ void TetrisFigures::CreateType(ALLEGRO_BITMAP* colorBlocks, ALLEGRO_BITMAP* colo
 
 
 void TetrisFigures::funcMov(int x, int y) {
+
 	auto ghost_ = ghostBlocks.begin();
 
-	for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end(); it++) {
-		TetrisBlocks* A = *it;
-		A->y -= y;
-		A->x -= x;
-		A->ThisCollider->posX -= x;
-		A->ThisCollider->posY -= y;
+	for (auto block : blocks) {
+		block->y -= y;
+		block->x -= x;
+		block->ThisCollider->posX -= x;
+		block->ThisCollider->posY -= y;
 
 		(*ghost_)->x -= x;
-		(*ghost_)->y = A->y;
+		(*ghost_)->y = block->y;
 		(*ghost_)->ThisCollider->posX -= x;
-		(*ghost_)->ThisCollider->posY = A->y;
+		(*ghost_)->ThisCollider->posY = block->y;
 
 		ghost_++;
 	}
+
 	this->y -= y;
 	this->x -= x;
 
@@ -164,12 +165,11 @@ void TetrisFigures::update(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Event
 
 		auto ghost_ = ghostBlocks.begin();
 
-		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end(); it++) {
-			TetrisBlocks* A = *it;
-			(*ghost_)->x = A->x;
-			(*ghost_)->y = A->y;
-			(*ghost_)->ThisCollider->posX = A->x;
-			(*ghost_)->ThisCollider->posY = A->y;
+		for (auto b : blocks) {
+			(*ghost_)->x = b->x;
+			(*ghost_)->y = b->y;
+			(*ghost_)->ThisCollider->posX = b->x;
+			(*ghost_)->ThisCollider->posY = b->y;
 
 			ghost_++;
 		}
@@ -212,27 +212,31 @@ void TetrisFigures::update(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Event
 			}
 
 
-		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
-
-			for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
-				if ((*it)->ThisCollider->Collision((*it2))) {
+		for (auto b : blocks) {
+			for (auto cb : CollisionBlocks)
+				if (b->ThisCollider->Collision(cb)) {
 					funcMov(x - FigureState.x, y - FigureState.y);
-					if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
-						auxStatic = true; 
+					if (cb->posY == 32 * 26) {
+						auxStatic = true;
 					}
 				}
-			}
-			for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
-				if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
+			for (auto ub : Unique_blocks) {
+				if (b->ThisCollider->Collision(ub->ThisCollider)) {
 					funcMov(x - FigureState.x, y - FigureState.y);
-					if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY) {
+					if (b->ThisCollider->posY != ub->ThisCollider->posY) {
 						auxStatic = true;
 					}
 				}
 			}
-			it++;
-
 		}
+
+/*
+		forAllBlocksInFigure(
+			funcMov(x - FigureState.x, y - FigureState.y),
+			funcMov(x - FigureState.x, y - FigureState.y),
+			funcMov(x - FigureState.x, y - FigureState.y)
+		)
+*/
 
 
 
@@ -242,24 +246,23 @@ void TetrisFigures::update(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Event
 					StaticTime++;
 					if (StaticTime >= 2) {
 						funcMov(0, -32);
-						for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
-							for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
-								if ((*it)->ThisCollider->Collision((*it2))) {
+
+						for (auto b : blocks) {
+							for (auto cb : CollisionBlocks)
+								if (b->ThisCollider->Collision(cb)) {
 									funcMov(x - FigureState.x, y - FigureState.y);
-									if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+									if (cb->posY == 32 * 26) {
+										controlling = false;
+									}
+								}
+							for (auto ub : Unique_blocks) {
+								if (b->ThisCollider->Collision(ub->ThisCollider)) {
+									funcMov(x - FigureState.x, y - FigureState.y);
+									if (b->ThisCollider->posY != ub->ThisCollider->posY) {
 										controlling = false;
 									}
 								}
 							}
-							for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
-								if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
-									funcMov(x - FigureState.x, y - FigureState.y);
-									if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY) {
-										controlling = false;
-									}
-								}
-							}
-							it++;
 						}
 						if (controlling) {
 							StaticTime = 0;
@@ -273,17 +276,16 @@ void TetrisFigures::update(ALLEGRO_EVENT_QUEUE* event_queue, ALLEGRO_EVENT Event
 
 	}
 	else {
-		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end(); ) {
-			Unique_blocks.push_back((*it));
-			it = blocks.erase(it);
-		}
+		for (auto b : blocks)
+			Unique_blocks.push_back(b);
+		blocks.clear();
 	}
 }
 
 
 template <class Complete_figure>
 void TetrisFigures::funcRot(Complete_figure form) {
-	list<TetrisBlocks*>::iterator it = blocks.begin();
+	auto it = blocks.begin();
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 5; j++) {
 			if (form[i][j] == 1) {
@@ -339,20 +341,47 @@ void TetrisFigures::rotate(bool clockwise) {
 
 	bool auxstate = false;
 
-	for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end(); it++) {
-		for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
-			if ((*it)->ThisCollider->Collision((*it2))) {
+	for (auto b : blocks) {
+		for (auto cb : CollisionBlocks)
+			if (b->ThisCollider->Collision(cb))
 				auxstate = true;
-			}
+		for (auto ub : Unique_blocks)
+			if (b->ThisCollider->Collision(ub->ThisCollider))
+				auxstate = true;
+	}
+
+
+	if (auxstate == true) {
+		bool auxColling = false;
+		funcMov(32, 0);
+		for (auto b : blocks) {
+
+			for (auto cb : CollisionBlocks)
+				if (b->ThisCollider->Collision(cb))
+					auxColling = true;
+			for (auto ub : Unique_blocks)
+				if (b->ThisCollider->Collision(ub->ThisCollider))
+					auxColling = true;
 		}
-		for (list<TetrisBlocks*>::iterator it3 = Unique_blocks.begin(); it3 != Unique_blocks.end(); it3++) {
-			if ((*it)->ThisCollider->Collision((*it3)->ThisCollider)) {
-				auxstate = true;
+		if (auxColling) {
+			funcMov(-64, 0);
+			bool auxColling2 = false;
+			for (auto b : blocks) {
+
+				for (auto cb : CollisionBlocks)
+					if (b->ThisCollider->Collision(cb))
+						auxColling2 = true;
+				for (auto ub : Unique_blocks)
+					if (b->ThisCollider->Collision(ub->ThisCollider))
+						auxColling2 = true;
 			}
+			if (auxColling2) {
+				funcMov(32, 0);
+				rotate(clockwise);
+			}
+
 		}
 	}
-	if (auxstate == true)
-		rotate(clockwise);
 
 }
 
@@ -360,52 +389,7 @@ bool TetrisFigures::Empty() {
 	return blocks.empty();
 }
 
-void TetrisFigures::DestroyTetrisFigures() {
-	for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
-		(*it)->DestroyTetrisBlocks();
-		it = blocks.erase(it);
-	}
-	for (auto it = ghostBlocks.begin(); it != ghostBlocks.end();) {
-		(*it)->DestroyTetrisBlocks();
-		it = blocks.erase(it);
-	}
 
-	delete (this);
-}
-
-void TetrisFigures::forAllBlocksInFigure() {
-	for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
-		if ((*it)->IsDeletable()) {
-			(*it)->DestroyTetrisBlocks();
-			it = blocks.erase(it);
-		}
-		else {
-			for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
-				if ((*it)->ThisCollider->Collision((*it2))) {
-					funcMov(x - FigureState.x, y - FigureState.y);
-					if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
-						StaticTime++;
-						if (StaticTime >= 2) {
-							controlling = false;
-						}
-					}
-				}
-			}
-			for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
-				if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
-					funcMov(x - FigureState.x, y - FigureState.y);
-					if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY) {
-						StaticTime++;
-						if (StaticTime >= 2) {
-							controlling = false;
-						}
-					}
-
-				}
-			}
-		}
-	}
-}
 
 void TetrisFigures::toDeep() {
 	bool Indeep = false;
@@ -413,29 +397,29 @@ void TetrisFigures::toDeep() {
 		FigureState.x = this->x;
 		FigureState.y = this->y;
 		funcMov(0, -32);
-		for (list<TetrisBlocks*>::iterator it = blocks.begin(); it != blocks.end();) {
-			for (list<Collider*>::iterator it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
-				if ((*it)->ThisCollider->Collision((*it2))) {
+
+		for (auto b : blocks) {
+			for (auto cb : CollisionBlocks)
+				if (b->ThisCollider->Collision(cb)) {
 					funcMov(x - FigureState.x, y - FigureState.y);
-					if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
+					if (cb->posY == 32 * 26) {
+						Indeep = true;
+						controlling = false;
+					}
+				}
+			for (auto ub : Unique_blocks) {
+				if (b->ThisCollider->Collision(ub->ThisCollider)) {
+					funcMov(x - FigureState.x, y - FigureState.y);
+
+					if (b->ThisCollider->posY != ub->ThisCollider->posY) {
 						Indeep = true;
 						controlling = false;
 					}
 				}
 			}
-			for (list<TetrisBlocks*>::iterator it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
-				if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
-					funcMov(x - FigureState.x, y - FigureState.y);
-					if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY) {
-						Indeep = true;
-						controlling = false;
-
-					}
-
-				}
-			}
-			it++;
 		}
+
+
 	}
 }
 
@@ -443,45 +427,74 @@ void TetrisFigures::toDeepGhost() {
 	bool Indeep = false;
 
 	while (!Indeep) {
-		for (auto it = ghostBlocks.begin(); it != ghostBlocks.end(); it++)
-			(*it)->mov();
 
-		for (auto it = ghostBlocks.begin(); it != ghostBlocks.end();) {
-			for (auto it2 = CollisionBlocks.begin(); it2 != CollisionBlocks.end(); it2++) {
-				if ((*it)->ThisCollider->Collision((*it2))) {
-					for (auto it3 = ghostBlocks.begin(); it3 != ghostBlocks.end(); it3++) {
-						(*it3)->y -= 32;
-						(*it3)->ThisCollider->posY -= 32;
+		for (auto gb : ghostBlocks)
+			gb->mov();
+
+		for (auto gb : ghostBlocks) {
+			for (auto cb : CollisionBlocks)
+				if (gb->ThisCollider->Collision(cb)) {
+					for (auto gb2 : ghostBlocks) {
+						gb2->y -= 32;
+						gb2->ThisCollider->posY -= 32;
 					}
-					if ((*it2)->posY == 26 * 32) { // CONDICION PARA DETENERLOS HASTA ABAJO
-						Indeep = true;
-					}
-				}
-			}
-			for (auto it2 = Unique_blocks.begin(); it2 != Unique_blocks.end(); it2++) {
-				if ((*it)->ThisCollider->Collision((*it2)->ThisCollider)) {
-					for (auto it3 = ghostBlocks.begin(); it3 != ghostBlocks.end(); it3++) {
-						(*it3)->y -= 32;
-						(*it3)->ThisCollider->posY -= 32;
-					}
-					if ((*it)->ThisCollider->posY != (*it2)->ThisCollider->posY)
+					if (cb->posY == 32 * 26)
 						Indeep = true;
 				}
+			for (auto b : Unique_blocks) {
+				if (gb->ThisCollider->Collision(b->ThisCollider)) {
+					for (auto gb2 : ghostBlocks) {
+						gb2->y -= 32;
+						gb2->ThisCollider->posY -= 32;
+					}
+					if (gb->ThisCollider->posY != b->ThisCollider->posY)
+						Indeep = true;
+				}
 			}
-			it++;
 		}
 
 	}
 
 	//Fix de Ghost when take a block
 	auto ghost_ = ghostBlocks.begin();
-	for (auto it = blocks.begin(); it != blocks.end(); it++) {
-		auto A = *it;
-		if ((*ghost_)->y < A->y) {
-			for (auto it = ghostBlocks.begin(); it != ghostBlocks.end(); it++)
-				(*it)->mov();
-		}
+	for (auto b : blocks) {
+		if ((*ghost_)->y < b->y)
+			for (auto gb : ghostBlocks)
+				gb->mov();
+
 		ghost_++;
 	}
+		
+}
 
+TetrisFigures::~TetrisFigures() {
+	for (auto b : blocks) {
+		delete b;
+	}
+	for (auto gb : ghostBlocks) {
+		delete gb;
+	}
+}
+
+
+
+template <class T>
+void TetrisFigures::forAllBlocksInFigure(void (*WhenColling)()) {
+
+
+	for (auto b : blocks) {
+		for (auto cb : CollisionBlocks)
+			if (b->ThisCollider->Collision(cb)) {
+				WhenColling();
+				if (cb->posY == 32 * 26) {
+				}
+			}
+		for (auto ub : Unique_blocks) {
+			if (b->ThisCollider->Collision(ub->ThisCollider)) {
+				if (b->ThisCollider->posY != ub->ThisCollider->posY) {
+					
+				}
+			}
+		}
+	}
 }

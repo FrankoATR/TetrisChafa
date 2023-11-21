@@ -14,6 +14,7 @@ class Buttons {
 		~Buttons();
 		void Display(ALLEGRO_EVENT_QUEUE* ,ALLEGRO_EVENT, float, float);
 		bool Pressed();
+		void update(float);
 };
 
 Buttons::Buttons(int x, int y, int sprite_w, int sprite_h, ALLEGRO_BITMAP* sprite_0, ALLEGRO_BITMAP* sprite_1) {
@@ -26,6 +27,10 @@ Buttons::Buttons(int x, int y, int sprite_w, int sprite_h, ALLEGRO_BITMAP* sprit
 	Press_Range = false;
 	Press_Button = false;
 
+}
+
+void Buttons::update(float relativePos) {
+	this->x -= relativePos;
 }
 
 Buttons::~Buttons() {

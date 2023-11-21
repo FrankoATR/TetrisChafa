@@ -14,7 +14,6 @@ class Collider
 		bool SquaretoSquareCollision( Collider*);
 		bool Collision( Collider*);
 
-		void virtual DestroyCollider() const;
 
 };
 
@@ -24,8 +23,8 @@ list<Collider*> CollisionBlocks;
 Collider::Collider(int posX, int posY, int dimX, int dimY, int typeCollision, bool active) {
 	this->posX = posX;
 	this->posY = posY;
-	this->dimX = dimX;
-	this->dimY = dimY;
+	this->dimX = dimX-1;
+	this->dimY = dimY-1;
 	this->typeCollision = typeCollision;
 	this->active = active;
 }
@@ -39,15 +38,8 @@ bool Collider::Collision( Collider* obj2) {
 }
 
 bool Collider::SquaretoSquareCollision(Collider* obj2) {
-	if ((posX <= obj2->posX + obj2->dimX) && (posX + dimX >= obj2->posX) &&
-		(posY <= obj2->posY + obj2->dimY) && (posY + dimY >= obj2->posY)) {
-		return true;
-	}
-	else return false;
-}
-
-void Collider::DestroyCollider() const{
-	delete (this);
+	return ((posX <= obj2->posX + obj2->dimX) && (posX + dimX >= obj2->posX) &&
+		(posY <= obj2->posY + obj2->dimY) && (posY + dimY >= obj2->posY));
 }
 
 

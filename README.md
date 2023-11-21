@@ -25,11 +25,12 @@ I want to share it with the game developer community.
 * [Project Status](#project-status)
 * [Room for Improvement](#room-for-improvement)
 * [Acknowledgements](#acknowledgements)
+* [Software License Agreement](#software-license-agreement)
 * [Contact](#contact)
 
 
 ## General Information
-- Last Update 11/2023 (v1.25.1)
+- Last Update 11/2023 (v1.26)
 - Development date: (10/2021 - 11/2021) - El Salvador.
 - This is a small project that I did in my free time while attending university.
 
@@ -42,9 +43,10 @@ I want to share it with the game developer community.
 
 
 ## Features 
-- A new level has been added: level 11
-- Optional fullscreen option is added for (1920x1080) and is required if the resolution is lower.
-- The high score is now saved in the My Games folder.
+- Added the option to pause the game by pressing ESC.
+- Different probability values ​​have been assigned to each of the figures.
+- Animation has been added when completing a row.
+- The rotation of figures when they are on the edges has been improved.
 
 ## Preview
 ![Preview](./img/preview1.png)
@@ -56,7 +58,7 @@ I want to share it with the game developer community.
 To play you just have to download the setup and continue installing the game, you can also fix if your files get damaged or you want to uninstall the game.
 
 ## Usage
-If you want to build it yourself, feel free to use and modify everything in VS-Solution; To do this you will need to have Visual Studio.
+If you want to create it yourself, feel free to use and modify everything in VS-Solution; To do this you will need to have Visual Studio and install the Allegro and nlohmann-json libraries.
 
 
 ## Project Status
@@ -70,7 +72,41 @@ Project is: _complete_
 ## Acknowledgements
 - This project was inspired by Tetris
 - Dedicated to all the people who inspire me to develop games.
-- Dedicated to Katherine <3
+
+
+## Software License Agreement
+This Software License Agreement is a legal contract between the user and Wand, owner of the software rights of the TetrisChafa Software game. By installing, copying or otherwise using the Software, User agrees to be bound by the terms and conditions of this Agreement.
+
+1. LICENSE OF USE
+
+1.1 Grant of License: Wand grants the User a non-exclusive, non-transferable and revocable license to use, modify and execute the source code of the Software for the sole purpose of enjoying the gaming experience.
+
+2. RESTRICTIONS
+
+2.1 Prohibited Commercial Distribution: The User acknowledges and agrees that he or she does not have the right to distribute, sell, sublicense or commercialize the Software or any modification of the Software source code for profit.
+
+2.2 Intellectual Property: The User acknowledges that TetrisChafa and all associated source code are the exclusive property of Wand. No ownership is granted in the Software, and User agrees not to claim any ownership rights in the Software.
+
+3. MODIFICATIONS AND DERIVATIVES
+
+3.1 Freedom of Modification: The User has the right to modify the source code of the Software for personal and non-commercial use.
+
+3.2 Prohibition of Commercial Distribution of Derivatives: Although the User may modify the source code of the Software, he does not have the right to commercially distribute such modifications.
+
+4. TERMINATION
+
+4.1 License Revocation: Wand reserves the right to revoke this license in the event of your failure to comply with the terms set forth in this Agreement.
+
+5. GENERAL PROVISIONS
+
+5.1 Applicable Law: This Agreement shall be governed and construed in accordance with the laws of El Salvador, without regard to its conflicts of law principles.
+
+By installing, copying or using the Software, the User acknowledges that he or she has read and understood this Agreement and agrees to comply with its terms and conditions.
+
+
+Wand
+
+Date: November 21, 2023
 
 
 ## Contact

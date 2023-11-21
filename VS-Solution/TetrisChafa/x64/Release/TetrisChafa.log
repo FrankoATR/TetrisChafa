@@ -3,9 +3,11 @@ D:\Mi PC\CODE\C++\TetrisChafa\TetrisChafa\main.cpp(24,1): warning C4005: 'WINVER
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\shared\sdkddkver.h(244,1): message : vea la definición anterior de 'WINVER'
 D:\Mi PC\CODE\C++\TetrisChafa\TetrisChafa\main.cpp(25,1): warning C4005: '_WIN32_WINNT': redefinición de macro
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\shared\sdkddkver.h(223,1): message : vea la definición anterior de '_WIN32_WINNT'
+D:\Mi PC\CODE\C++\TetrisChafa\TetrisChafa\main.cpp(494,98): warning C4267: 'argumento': conversión de 'size_t' a 'int'; posible pérdida de datos
+D:\Mi PC\CODE\C++\TetrisChafa\TetrisChafa\main.cpp(814,96): warning C4267: 'argumento': conversión de 'size_t' a 'int'; posible pérdida de datos
   Generando código
-  Previous IPDB and IOBJ mismatch, fall back to full compilation.
-D:\Mi PC\CODE\C++\TetrisChafa\TetrisChafa\Collisions.h(39): warning C4715: 'Collider::Collision': no todas las rutas de acceso de control devuelven un valor
-  All 1731 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Previous IPDB not found, fall back to full compilation.
+D:\Mi PC\CODE\C++\TetrisChafa\TetrisChafa\Collisions.h(38): warning C4715: 'Collider::Collision': no todas las rutas de acceso de control devuelven un valor
+  All 1845 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Generación de código finalizada
   TetrisChafa.vcxproj -> D:\Mi PC\CODE\C++\TetrisChafa\x64\Release\TetrisChafa.exe
