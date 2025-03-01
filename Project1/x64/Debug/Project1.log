@@ -1,3 +1,0 @@
-﻿  main.cpp
-D:\CODE\C++\AllegroFirstGame\Project1\Project1\Collisions.h(47): warning C4715: 'Collider::Collision': no todas las rutas de acceso de control devuelven un valor
-  Project1.vcxproj -> D:\CODE\C++\AllegroFirstGame\Project1\x64\Debug\Project1.exe

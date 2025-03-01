@@ -1,0 +1,68 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compile and Link TetrisChafa",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-I",
+                "${workspaceFolder}\\include",
+                "-std=c++11",
+				"-O2",
+                "-c",
+                "${workspaceFolder}\\src\\main.cpp",
+                "-o",
+                "${workspaceFolder}\\build\\obj\\${input:executableName}.o"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Link TetrisChafa",
+            "type": "shell",
+            "command": "g++.exe",
+            "args": [
+                "-I",
+                "${workspaceFolder}\\include",
+                "${workspaceFolder}\\build\\obj\\${input:executableName}.o",
+                "-o",
+                "${workspaceFolder}\\build\\release\\${input:executableName}.exe",
+                "${workspaceFolder}\\resource.res",
+                "${workspaceFolder}\\lib\\liballegro_monolith.dll.a",
+                "-lcrypt32",
+                "-lole32",
+                "-lshell32",
+                "-luuid",
+                "-static",
+				"-mwindows"
+            ],
+            "dependsOn": "Compile and Link TetrisChafa",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run TetrisChafa",
+            "type": "shell",
+            "command": "${workspaceFolder}\\build\\release\\${input:executableName}.exe",
+            "dependsOn": "Link TetrisChafa",
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "executableName",
+            "type": "promptString",
+            "description": "Enter the name of the executable:",
+            "default": "TetrisChafa"
+        }
+    ]
+}
