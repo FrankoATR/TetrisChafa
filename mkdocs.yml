@@ -1,0 +1,24 @@
+site_name: TetrisChafa
+site_description: Documentación oficial de TetrisChafa
+site_author: WandGames
+theme:
+  name: material
+  palette:
+    primary: 'indigo'
+    accent: 'indigo'
+nav:
+  - Home: index.md
+  - Controles: controls.md
+  - Tecnologías: technologies.md
+  - Créditos: credits.md
+  - Changelog: changelog.md
+  - Recursos: resources.md
+  - "Licencia": license.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.details
+  - toc:
+      permalink: true

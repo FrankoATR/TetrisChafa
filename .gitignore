@@ -1,3 +1,20 @@
 build/release/assets/
 build/release/TetrisChafa.exe
 setup/TetrisChafa-Setup.exe
+
+# -----------------------------------
+# Entorno Python y caches
+# -----------------------------------
+# Byte-code compilado
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entorno virtual
+.venv/
+env/
+venv/
+
+# pyenv local version
+.python-version
+.open_powershell_env.bat
