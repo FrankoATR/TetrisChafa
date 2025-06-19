@@ -1,8 +1,8 @@
 # 🎮 TetrisChafa
 
-Bienvenido a la documentación de **TetrisChafa**, tu versión casera de Tetris desarrollada por **Wand**.
+Bienvenido a la documentación de **TetrisChafa**, desarrollada por **Wand**.
 
-Totally inspired by one of my favorite games, Tetris.  
+Totalmente inspirado por uno de mis juegos favoritos, Tetris.  
 Este es mi primer proyecto de este tipo; espero que la comunidad de desarrolladores de juegos lo disfrute.
 
 ## Navegación rápida

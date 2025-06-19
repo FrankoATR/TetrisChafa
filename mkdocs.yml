@@ -13,6 +13,7 @@ nav:
   - Créditos: credits.md
   - Changelog: changelog.md
   - Recursos: resources.md
+  - Compilación: compile.md
   - "Licencia": license.md
 
 markdown_extensions:
